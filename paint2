@@ -212,9 +212,9 @@ cor_colocada = StringVar(root)
 cor_menu = ttk.OptionMenu(
     frame,
     cor_colocada,
+    
+    'black',
     'white',
-    'black',
-    'black',
     'red',
     'blue',
     'green',
