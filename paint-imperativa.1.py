@@ -193,7 +193,6 @@ figuras = []
 figura_nova = None
 
 root = Tk()
-root.title("Paint Simples")
 
 frame = Frame(root)
 
