@@ -1,0 +1,25 @@
+class Figura:
+    def __init__(self, circulo, retangulo, rabisco, linha, oval):
+        self.circulo = circulo
+        self.retangulo = retangulo
+        self.rabisco = rabisco
+        self.linha = linha
+        self.oval = oval
+
+    def cor_in(self):
+
+    def cor_out(self):
+
+    def label(self):
+
+    def button(self):
+
+class Circulo(Figura):
+
+class Retangulo(Figura):
+
+class Rabisco(Figura):
+
+class Linha(Figura):
+
+class Oval(Figura):
