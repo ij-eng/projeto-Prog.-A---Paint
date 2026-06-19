@@ -8,23 +8,27 @@ def iniciar_figura_nova(event):
 
     tipo = tipo_figura_var.get()
 
+    cor = cor_colocada.get()
+    if cor == 'transparent':
+        cor = ''
+
     if tipo == 'linha':
-        figura_nova = ("linha", (event.x, event.y, event.x, event.y))
+        figura_nova = ("linha", (event.x, event.y, event.x, event.y), cor)
 
     elif tipo == 'rabisco':
-        figura_nova = ("rabisco", [(event.x, event.y)])
+        figura_nova = ("rabisco", [(event.x, event.y)], cor)
 
     elif tipo == 'retangulo':
-        figura_nova = ('retangulo', (event.x, event.y, event.x, event.y))
+        figura_nova = ('retangulo', (event.x, event.y, event.x, event.y), cor)
 
     elif tipo == 'oval':
-        figura_nova = ('oval', (event.x, event.y, event.x, event.y))
+        figura_nova = ('oval', (event.x, event.y, event.x, event.y), cor)
 
     elif tipo == 'circulo':
         figura_nova = ('circulo',
                        (event.x, event.y,
                         event.x, event.y,
-                        event.x, event.y))
+                        event.x, event.y), cor)
 
 
 def atualizar_figura_nova(event):
@@ -33,29 +37,34 @@ def atualizar_figura_nova(event):
     if figura_nova is None:
         return
 
-    elif figura_nova[0] == "rabisco":
-        figura_nova[1].append((event.x, event.y))
+    fig, values, cor = figura_nova
 
-    elif figura_nova[0] == "linha":
+    if fig == "rabisco":
+        values.append((event.x, event.y))
+
+    elif fig == "linha":
         figura_nova = (
             "linha",
-            (figura_nova[1][0], figura_nova[1][1], event.x, event.y)
+            (values[0], values[1], event.x, event.y),
+            cor  # Repassamos a cor guardada
         )
 
-    elif figura_nova[0] == "retangulo":
+    elif fig == "retangulo":
         figura_nova = (
             "retangulo",
-            (figura_nova[1][0], figura_nova[1][1], event.x, event.y)
+            (values[0], values[1], event.x, event.y),
+            cor
         )
 
-    elif figura_nova[0] == "oval":
+    elif fig == "oval":
         figura_nova = (
             "oval",
-            (figura_nova[1][0], figura_nova[1][1], event.x, event.y)
+            (values[0], values[1], event.x, event.y),
+            cor
         )
 
-    elif figura_nova[0] == 'circulo':
-        x1, y1 = figura_nova[1][4], figura_nova[1][5]
+    elif fig == 'circulo':
+        x1, y1 = values[4], values[5]
 
         raio = math.sqrt(
             (event.x - x1) ** 2 +
@@ -68,11 +77,11 @@ def atualizar_figura_nova(event):
                 x1 - raio, y1 - raio,
                 x1 + raio, y1 + raio,
                 x1, y1
-            )
+            ),
+            cor
         )
 
     desenhar_figuras()
-    desenhar_figura_nova()
 
 
 def incluir_figura_nova(event):
@@ -88,85 +97,85 @@ def incluir_figura_nova(event):
 def desenhar_figuras():
     canvas.delete("all")
 
-    cor1 = cor_fill.get()
-    cor2 = cor_out.get()
-
-    for fig, values in figuras:
+    for fig, values, cor_salva in figuras:
 
         if fig == "linha":
             canvas.create_line(
                 values[0], values[1],
                 values[2], values[3],
-                fill=cor2
+                fill=cor_salva if cor_salva else 'black'
             )
 
         elif fig == "rabisco":
-            canvas.create_line(values, fill=cor2)
+            canvas.create_line(
+                values,
+                fill=cor_salva if cor_salva else 'black'
+            )
 
         elif fig == "retangulo":
             canvas.create_rectangle(
                 values[0], values[1],
                 values[2], values[3],
-                fill=cor1,
-                outline= cor2
+                fill=cor_salva
             )
 
         elif fig == "oval":
             canvas.create_oval(
                 values[0], values[1],
                 values[2], values[3],
-                fill=cor1,
-                outline=cor2
+                fill=cor_salva
             )
 
         elif fig == "circulo":
             canvas.create_oval(
                 values[0], values[1],
                 values[2], values[3],
-                fill=cor1,
-                outline = cor2
+                fill=cor_salva
             )
+
+    desenhar_figura_nova()
 
 
 def desenhar_figura_nova():
     if figura_nova is None:
         return
 
-    fig, values = figura_nova
+    fig, values, cor = figura_nova
 
     if fig == "linha":
         canvas.create_line(
             values[0], values[1],
             values[2], values[3],
-            dash=(4, 2)
+            dash=(4, 2), fill=cor if cor else "black"
         )
 
     elif fig == "rabisco":
-        canvas.create_line(values, dash=(4, 2))
+        canvas.create_line(values, dash=(4, 2), fill=cor if cor else "black")
 
     elif fig == "retangulo":
         canvas.create_rectangle(
             values[0], values[1],
-            values[2], values[3]
+            values[2], values[3],
+            fill=cor
         )
 
     elif fig == "oval":
         canvas.create_oval(
             values[0], values[1],
             values[2], values[3],
-            dash=(4, 2)
+            dash=(4, 2), fill=cor
         )
 
     elif fig == "circulo":
         canvas.create_oval(
             values[0], values[1],
             values[2], values[3],
-            dash=(4, 2)
+            dash=(4, 2), fill=cor
         )
 
 
 def incompleta(figura):
-    fig, values = figura
+    fig, values, cor = figura
 
     if fig in ("linha", "retangulo", "oval"):
         return (values[0], values[1]) == (values[2], values[3])
@@ -184,6 +193,7 @@ figuras = []
 figura_nova = None
 
 root = Tk()
+root.title("Paint Simples")
 
 frame = Frame(root)
 
@@ -207,39 +217,25 @@ option_menu = ttk.OptionMenu(
 
 option_menu.grid(column=1, row=0, sticky=W, **paddings)
 
-cor_fill = StringVar(root)
-cor_out = StringVar(root)
+cor_colocada = StringVar(root)
 
-cor_fill_menu = ttk.OptionMenu(
+cor_menu = ttk.OptionMenu(
     frame,
-    cor_fill,
-    '',
-    'white',
-    'red',
-    'blue',
-    'green',
-    'yellow',
-    'black',
-    ''
-)
-
-cor_outline_menu = ttk.OptionMenu(
-    frame,
-    cor_out,
+    cor_colocada,
+    'transparent',
+    'transparent',
     'black',
     'white',
     'red',
     'blue',
     'green',
-    'yellow',
-    'black'
+    'yellow'
 )
 
-cor_fill_menu.grid(row=0, column=2)
-cor_outline_menu.grid(row=0, column=3)
+cor_menu.grid(row=0, column=2)
 
-canvas = Canvas(frame, bg='white', width=1440, height=800)
-canvas.grid(column=0, row=1, columnspan=4, sticky=W, **paddings)
+canvas = Canvas(frame, bg='white', width=600, height=600)
+canvas.grid(column=0, row=1, columnspan=3, sticky=W, **paddings)
 
 frame.pack()
 
