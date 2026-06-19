@@ -1,0 +1,25 @@
+import tkinter as tk
+from tkinter import colorchooser
+
+def escolher_cor():
+    # Abre o seletor de cores nativo do sistema
+    # Retorna uma tupla: ((R, G, B), 'código_hexadecimal')
+    cor = colorchooser.askcolor(title="Escolha uma cor")
+    
+    # Verifica se o usuário escolheu uma cor (e não cancelou)
+    if cor[1]:
+        cor_hex = cor[1]
+        # Aplica a cor de fundo na janela principal
+        janela.configure(bg=cor_hex)
+        print(f"Cor selecionada: {cor_hex}")
+
+# Configuração da janela principal
+janela = tk.Tk()
+janela.geometry("300x200")
+janela.title("Exemplo Colorchooser")
+
+# Botão para abrir o seletor
+botao = tk.Button(janela, text="Selecionar Cor", command=escolher_cor)
+botao.pack(pady=50)
+
+janela.mainloop()
