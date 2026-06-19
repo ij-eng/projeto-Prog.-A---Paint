@@ -1,5 +1,5 @@
 from tkinter import *
-from tkinter import ttk
+from tkinter.ttk import *
 import math
 
 
@@ -189,12 +189,12 @@ frame = Frame(root)
 
 paddings = {'padx': 5, 'pady': 5}
 
-label = ttk.Label(frame, text='Paint')
+label = Label(frame, text='Paint')
 label.grid(column=0, row=0, sticky=W, **paddings)
 
 tipo_figura_var = StringVar(root)
 
-option_menu = ttk.OptionMenu(
+option_menu = OptionMenu(
     frame,
     tipo_figura_var,
     'linha',
@@ -210,7 +210,7 @@ option_menu.grid(column=1, row=0, sticky=W, **paddings)
 cor_fill = StringVar(root)
 cor_out = StringVar(root)
 
-cor_fill_menu = ttk.OptionMenu(
+cor_fill_menu = OptionMenu(
     frame,
     cor_fill,
     'transparent',
@@ -231,7 +231,7 @@ cor_fill_menu = ttk.OptionMenu(
     'tan', 'beige', 'wheat', 'khaki'
 )
 
-cor_outline_menu = ttk.OptionMenu(
+cor_outline_menu = OptionMenu(
     frame,
     cor_out,
     'black',
