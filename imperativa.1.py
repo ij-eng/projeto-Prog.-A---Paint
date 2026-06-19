@@ -1,7 +1,7 @@
 from tkinter import *
 from tkinter.ttk import *
 import math
-
+from tkinter import colorchooser
 
 def iniciar_figura_nova(event):
     global figura_nova
@@ -180,10 +180,25 @@ def incompleta(figura):
     return False
 
 
+def escolher_cor_in():
+    cor_in = colorchooser.askcolor(title="Escolha uma cor")
+    if cor_in[1]:
+        cor_hex = cor_in[1]
+        cor_fill.set(cor_hex)
+
+def escolher_cor_out():
+    cor_outl= colorchooser.askcolor(title="Escolha uma cor")
+    if cor_outl[1]:
+        cor_hex = cor_outl[1]
+        cor_out.set(cor_hex)
+
 figuras = []
 figura_nova = None
 
 root = Tk()
+
+cor_fill = StringVar(root, value="transparent")
+cor_out = StringVar(root, value="black")
 
 frame = Frame(root)
 
@@ -204,50 +219,12 @@ option_menu = OptionMenu(
     'oval',
     'circulo'
 )
-
 option_menu.grid(column=1, row=0, sticky=W, **paddings)
 
-cor_fill = StringVar(root)
-cor_out = StringVar(root)
-
-cor_fill_menu = OptionMenu(
-    frame,
-    cor_fill,
-    'transparent',
-    'transparent',
-    'black', 'white', 'snow', 'ghostwhite', 'whitesmoke', 'gainsboro',
-    'lightgray', 'silver', 'gray', 'darkgray', 'dimgray', 'slate gray',
-    'red', 'darkred', 'crimson', 'maroon', 'firebrick', 'indianred',
-    'pink', 'lightpink', 'hotpink', 'deeppink', 'salmon', 'lightsalmon',
-    'blue', 'darkblue', 'mediumblue', 'navy', 'royalblue', 'skyblue',
-    'lightblue', 'deepskyblue', 'cornflower blue', 'dodgerblue', 'cadet blue',
-    'cyan', 'darkcyan', 'teal', 'turquoise', 'aquamarine',
-    'green', 'darkgreen', 'lightgreen', 'forestgreen', 'seagreen',
-    'mediumseagreen', 'springgreen', 'lawn green', 'lime', 'olive', 'darkolivegreen',
-    'yellow', 'lightyellow', 'gold', 'orange', 'darkorange', 'coral', 'tomato',
-    'purple', 'indigo', 'violet', 'magenta',
-    'orchid', 'plum', 'lavender', 'thistle',
-    'brown', 'chocolate', 'saddlebrown', 'sienna', 'peru', 'burlywood',
-    'tan', 'beige', 'wheat', 'khaki'
-)
-
-cor_outline_menu = OptionMenu(
-    frame,
-    cor_out,
-    'black',
-    'black',
-    'white', 'gainsboro', 'lightgray', 'silver', 'gray', 'darkgray', 'dimgray', 'slate gray',
-    'red', 'darkred', 'crimson', 'maroon', 'firebrick', 'pink', 'hotpink', 'deeppink', 'salmon',
-    'blue', 'darkblue', 'navy', 'royalblue', 'skyblue', 'lightblue', 'deepskyblue', 'dodgerblue',
-    'cyan', 'darkcyan', 'teal', 'turquoise',
-    'green', 'darkgreen', 'lightgreen', 'forestgreen', 'seagreen', 'lime', 'olive',
-    'yellow', 'gold', 'orange', 'darkorange', 'coral',
-    'purple', 'indigo', 'violet', 'magenta', 'fuchsia', 'orchid', 'plum', 'lavender',
-    'brown', 'chocolate', 'saddlebrown', 'sienna', 'tan', 'beige', 'khaki'
-)
-
-cor_fill_menu.grid(row=0, column=2)
-cor_outline_menu.grid(row=0, column=3)
+botao1= Button(frame, text="Cor do preenchimento", command=escolher_cor_in)
+botao1.grid(column=2, row=0, sticky=W, **paddings)
+botao2= Button(frame, text="Cor da linha", command=escolher_cor_out)
+botao2.grid(column=3, row=0, sticky=W, **paddings)
 
 canvas = Canvas(frame, bg='white', width=1440, height=800)
 canvas.grid(column=0, row=1, columnspan=4, sticky=W, **paddings)
