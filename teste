@@ -180,14 +180,19 @@ def incompleta(figura):
     return False
 
 
-def escolher_cor():
-    cor = colorchooser.askcolor(title="Escolha uma cor")
-    if cor[1]:
-        cor_hex = cor[1]
+def escolher_cor_in():
+    cor_in = colorchooser.askcolor(title="Escolha uma cor")
+    if cor_in[1]:
+        cor_hex = cor_in[1]
         cor_fill.set(cor_hex)
-        cor_out.set(cor_hex)
         print(f"Cor selecionada: {cor_hex}")
 
+def escolher_cor_out():
+    cor_out = colorchooser.askcolor(title="Escolha uma cor")
+    if cor_out[1]:
+        cor_hex = cor_out[1]
+        cor_out.set(cor_hex)
+        print(f"Cor selecionada: {cor_hex}")
 
 figuras = []
 figura_nova = None
@@ -218,8 +223,10 @@ option_menu = OptionMenu(
 )
 option_menu.grid(column=1, row=0, sticky=W, **paddings)
 
-botao = Button(frame, text="Selecionar Cor", command=escolher_cor)
-botao.grid(column=2, row=0, sticky=W, **paddings)
+botao1= Button(frame, text="Cor do preenchimento", command=escolher_cor_in)
+botao1.grid(column=2, row=0, sticky=W, **paddings)
+botao2= Button(frame, text="Cor da linha", command=escolher_cor_out)
+botao2.grid(column=3, row=0, sticky=W, **paddings)
 
 canvas = Canvas(frame, bg='white', width=1440, height=800)
 canvas.grid(column=0, row=1, columnspan=4, sticky=W, **paddings)
