@@ -238,7 +238,7 @@ cor_outline_menu = ttk.OptionMenu(
 cor_fill_menu.grid(row=0, column=2)
 cor_outline_menu.grid(row=0, column=3)
 
-canvas = Canvas(frame, bg='white', width=600, height=600)
+canvas = Canvas(frame, bg='white', width=1440, height=800)
 canvas.grid(column=0, row=1, columnspan=4, sticky=W, **paddings)
 
 frame.pack()
