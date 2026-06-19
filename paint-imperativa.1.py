@@ -216,7 +216,7 @@ cor_fill_menu = OptionMenu(
     'transparent',
     'transparent',
     'black', 'white', 'snow', 'ghostwhite', 'whitesmoke', 'gainsboro',
-    'lightgray', 'silver', 'gray', 'darkgray', 'dimgray', 'charcoal', 'slate gray',
+    'lightgray', 'silver', 'gray', 'darkgray', 'dimgray', 'slate gray',
     'red', 'darkred', 'crimson', 'maroon', 'firebrick', 'indianred',
     'pink', 'lightpink', 'hotpink', 'deeppink', 'salmon', 'lightsalmon',
     'blue', 'darkblue', 'mediumblue', 'navy', 'royalblue', 'skyblue',
@@ -225,7 +225,7 @@ cor_fill_menu = OptionMenu(
     'green', 'darkgreen', 'lightgreen', 'forestgreen', 'seagreen',
     'mediumseagreen', 'springgreen', 'lawn green', 'lime', 'olive', 'darkolivegreen',
     'yellow', 'lightyellow', 'gold', 'orange', 'darkorange', 'coral', 'tomato',
-    'purple', 'darkpurple', 'indigo', 'violet', 'magenta', 'fuchsia',
+    'purple', 'indigo', 'violet', 'magenta',
     'orchid', 'plum', 'lavender', 'thistle',
     'brown', 'chocolate', 'saddlebrown', 'sienna', 'peru', 'burlywood',
     'tan', 'beige', 'wheat', 'khaki'
