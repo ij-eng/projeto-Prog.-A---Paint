@@ -123,3 +123,7 @@ class App:
         cor_outl = colorchooser.askcolor(title="Escolha uma cor")
         if cor_outl[1]:
             self.cor_out.set(cor_outl[1])
+
+root = Tk()
+app = App(root)
+root.mainloop()
