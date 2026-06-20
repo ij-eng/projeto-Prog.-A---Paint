@@ -2,17 +2,18 @@ from tkinter import *
 from tkinter.ttk import *
 import math
 from tkinter import colorchooser
+from abc import ABC, abstractmethod  
 
-class Figura:
+class Figura(ABC):
     def __init__(self, canvas, valores, cor_fill, cor_out):
         self.canvas = canvas
         self.valores = valores
         self.cor_fill = cor_fill
         self.cor_out = cor_out
-
+    @abstractmethod
     def desenhar(self):
         pass
-
+    @abstractmethod
     def desenhar_provisorio(self):
         pass
 
@@ -106,7 +107,7 @@ class App:
         self.configurar_eventos()
     
     def configurar_interface(self):
-    
+        
     
     def configurar_eventos(self):
         
