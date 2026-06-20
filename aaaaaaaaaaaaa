@@ -107,10 +107,12 @@ class App:
         self.configurar_eventos()
     
     def configurar_interface(self):
-        
+            
     
     def configurar_eventos(self):
-        
+        self.canvas.bind("<Button-1>", self.ao_clicar)
+        self.canvas.bind("<B1-Motion>", self.ao_arrastar)
+        self.canvas.bind("<ButtonRelease-1>", self.ao_soltar)
         
     def cor_out(self):
         cor_in = colorchooser.askcolor(title="Escolha uma cor")
