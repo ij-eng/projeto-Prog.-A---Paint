@@ -1,25 +1,122 @@
+from tkinter import *
+from tkinter.ttk import *
+import math
+from tkinter import colorchooser
+
 class Figura:
-    def __init__(self, circulo, retangulo, rabisco, linha, oval):
-        self.circulo = circulo
-        self.retangulo = retangulo
-        self.rabisco = rabisco
-        self.linha = linha
-        self.oval = oval
+    def __init__(self, canvas, valores, cor_fill, cor_out):
+        self.canvas = canvas
+        self.valores = valores
+        self.cor_fill = cor_fill
+        self.cor_out = cor_out
 
-    def cor_in(self):
+    def desenhar(self):
+        pass
 
-    def cor_out(self):
+    def desenhar_provisorio(self):
+        pass
 
-    def label(self):
-
-    def button(self):
-
-class Circulo(Figura):
-
-class Retangulo(Figura):
-
-class Rabisco(Figura):
 
 class Linha(Figura):
+    def desenhar(self):
+        self.canvas.create_line(
+            self.valores[0], self.valores[1],
+            self.valores[2], self.valores[3],
+            out=self.cor_out
+        )
+
+    def desenhar_provisorio(self):
+        self.canvas.create_line(
+            self.valores[0], self.valores[1],
+            self.valores[2], self.valores[3],
+            dash=(4, 2)
+        )
+
+
+class Rabisco(Figura):
+    def desenhar(self):
+        if len(self.valores) > 1:
+            self.canvas.create_line(self.valores, fill=self.cor_out)
+
+    def desenhar_provisorio(self):
+        if len(self.valores) > 1:
+            self.canvas.create_line(self.valores, dash=(4, 2))
+
+
+class Retangulo(Figura):
+    def desenhar(self):
+        self.canvas.create_rectangle(
+            self.valores[0], self.valores[1],
+            self.valores[2], self.valores[3],
+            fill=self.cor_fill,
+            outline=self.cor_out
+        )
+
+    def desenhar_provisorio(self):
+        self.canvas.create_rectangle(
+            self.valores[0], self.valores[1],
+            self.valores[2], self.valores[3]
+        )
+
 
 class Oval(Figura):
+    def desenhar(self):
+        self.canvas.create_oval(
+            self.valores[0], self.valores[1],
+            self.valores[2], self.valores[3],
+            fill=self.cor_fill,
+            outline=self.cor_out
+        )
+
+    def desenhar_provisorio(self):
+        self.canvas.create_oval(
+            self.valores[0], self.valores[1],
+            self.valores[2], self.valores[3],
+            dash=(4, 2)
+        )
+
+
+class Circulo(Figura):
+    def desenhar(self):
+        self.canvas.create_oval(
+            self.valores[0], self.valores[1],
+            self.valores[2], self.valores[3],
+            fill=self.cor_fill,
+            outline=self.cor_out
+        )
+
+    def desenhar_provisorio(self):
+        self.canvas.create_oval(
+            self.valores[0], self.valores[1],
+            self.valores[2], self.valores[3],
+            dash=(4, 2)
+        )
+        
+class App:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Paint POO Avançado")
+        self.figuras = []
+        self.tipo_atual = None
+        self.valores_atual = None
+        self.cor_fill = StringVar(self.root, value="transparent")
+        self.cor_out = StringVar(self.root, value="black")
+        self.tipo_figura_var = StringVar(self.root)
+        self.configurar_interface()
+        self.configurar_eventos()
+    
+    def configurar_interface(self):
+    
+    
+    def configurar_eventos(self):
+        
+        
+    def cor_out(self):
+        cor_in = colorchooser.askcolor(title="Escolha uma cor")
+        if cor_in[1]:
+            self.cor_fill.set(cor_in[1])
+    
+    def cor_in(self):
+        cor_outl = colorchooser.askcolor(title="Escolha uma cor")
+        if cor_outl[1]:
+            self.cor_out.set(cor_outl[1])
