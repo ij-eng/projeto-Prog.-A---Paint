@@ -111,8 +111,7 @@ class App:
         ferramentas.pack(side=TOP, fill=X)
         
         Label(ferramentas, text="Forma: ").pack(side=LEFT, padx=5)
-        formas = ["Rabisco", "Linha", "Retangulo", "Oval", "Circulo"]
-        seletor = Combobox(ferramentas, textvariable=self.tipo_figura_var, values=formas, state="readonly", width=12)
+        seletor = Combobox(ferramentas, textvariable=self.tipo_figura_var, values=["Rabisco", "Linha", "Retangulo", "Oval", "Circulo"], state="readonly", width=12)
         seletor.pack(side=LEFT, padx=5)
         
         btn_cor_out = Button(ferramentas, text="Cor Borda", command=self.escolher_cor_in)
