@@ -107,19 +107,34 @@ class App:
         self.configurar_eventos()
     
     def configurar_interface(self):
-            
+        ferramentas = Frame(self.root, padding=5)
+        ferramentas.pack(side=TOP, fill=X)
+        
+        Label(ferramentas, text="Forma: ").pack(side=LEFT, padx=5)
+        formas = ["Rabisco", "Linha", "Retangulo", "Oval", "Circulo"]
+        seletor = Combobox(ferramentas, textvariable=self.tipo_figura_var, values=formas, state="readonly", width=12)
+        seletor.pack(side=LEFT, padx=5)
+        
+        btn_cor_out = Button(ferramentas, text="Cor Borda", command=self.escolher_cor_in)
+        btn_cor_out.pack(side=LEFT, padx=5)
+        
+        btn_cor_in = Button(ferramentas, text="Cor Preenchimento", command=self.escolher_cor_out)
+        btn_cor_in.pack(side=LEFT, padx=5)
+        
+        self.canvas = Canvas(self.root, bg="white", width=800, height=600)
+        self.canvas.pack(side=TOP, fill=BOTH, expand=True)
     
     def configurar_eventos(self):
         self.canvas.bind("<Button-1>", self.ao_clicar)
         self.canvas.bind("<B1-Motion>", self.ao_arrastar)
         self.canvas.bind("<ButtonRelease-1>", self.ao_soltar)
         
-    def cor_out(self):
+    def escolher_cor_out(self):
         cor_in = colorchooser.askcolor(title="Escolha uma cor")
         if cor_in[1]:
             self.cor_fill.set(cor_in[1])
     
-    def cor_in(self):
+    def escolher_cor_in(self):
         cor_outl = colorchooser.askcolor(title="Escolha uma cor")
         if cor_outl[1]:
             self.cor_out.set(cor_outl[1])
