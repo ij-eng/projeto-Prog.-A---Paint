@@ -33,7 +33,7 @@ class Linha(Figura):
         return self.canvas.create_line(
             self.valores[0], self.valores[1],
             self.valores[2], self.valores[3],
-            fill= self.cor_out
+            fill=self.cor_out
         )
 
 
@@ -60,7 +60,7 @@ class Retangulo(Figura):
         return self.canvas.create_rectangle(
             self.valores[0], self.valores[1],
             self.valores[2], self.valores[3],
-            fill = self.cor_fill, outline= self.cor_out
+            fill=self.cor_fill, outline=self.cor_out
         )
 
 
@@ -77,63 +77,8 @@ class Oval(Figura):
         return self.canvas.create_oval(
             self.valores[0], self.valores[1],
             self.valores[2], self.valores[3],
-            fill = self.cor_fill,
-            outline= self.cor_out
-        )
-
-class Pentagono(Figura):
-    def desenhar(self):
-        x1, y1 = self.valores[0], self.valores[1]
-        x2, y2 = self.valores[2], self.valores[3]
-        x_mid = (x1 + x2) / 2
-        largura = x2 - x1
-        altura = y2 - y1
-        x_base1 = x1 + largura * 0.15
-        x_base2 = x1 + largura * 0.85
-        y_ombro = y1 + altura * 0.4
-        self.canvas.create_polygon(
-            x_mid, y1, x2, y_ombro, x_base2, y2, x_base1, y2, x1, y_ombro,
-            fill=self.cor_fill, outline=self.cor_out
-        )
-
-    def desenhar_provisorio(self):
-        x1, y1 = self.valores[0], self.valores[1]
-        x2, y2 = self.valores[2], self.valores[3]
-        x_mid = (x1 + x2) / 2
-        largura = x2 - x1
-        altura = y2 - y1
-        x_base1 = x1 + largura * 0.15
-        x_base2 = x1 + largura * 0.85
-        y_ombro = y1 + altura * 0.4
-        return self.canvas.create_polygon(
-            x_mid, y1, x2, y_ombro, x_base2, y2, x_base1, y2, x1, y_ombro,
-            fill=self.cor_fill, outline=self.cor_out
-        )
-
-
-class Hexagono(Figura):
-    def desenhar(self):
-        x1, y1 = self.valores[0], self.valores[1]
-        x2, y2 = self.valores[2], self.valores[3]
-        largura = x2 - x1
-        y_m = (y1 + y2) / 2
-        x_um_quarto = x1 + largura * 0.25
-        x_tres_quartos = x1 + largura * 0.75
-        self.canvas.create_polygon(
-            x_um_quarto, y1, x_tres_quartos, y1, x2, y_m, x_tres_quartos, y2, x_um_quarto, y2, x1, y_m,
-            fill=self.cor_fill, outline=self.cor_out
-        )
-
-    def desenhar_provisorio(self):
-        x1, y1 = self.valores[0], self.valores[1]
-        x2, y2 = self.valores[2], self.valores[3]
-        largura = x2 - x1
-        y_mid = (y1 + y2) / 2
-        x_um_quarto = x1 + largura * 0.25
-        x_tres_quartos = x1 + largura * 0.75
-        return self.canvas.create_polygon(
-            x_um_quarto, y1, x_tres_quartos, y1, x2, y_mid, x_tres_quartos, y2, x_um_quarto, y2, x1, y_mid,
-            fill=self.cor_fill, outline=self.cor_out
+            fill=self.cor_fill,
+            outline=self.cor_out
         )
 
 
@@ -141,9 +86,7 @@ class Circulo(Figura):
     def desenhar(self):
         x1, y1 = self.valores[0], self.valores[1]
         x2, y2 = self.valores[2], self.valores[3]
-
         raio = math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
-
         self.canvas.create_oval(
             x1 - raio, y1 - raio,
             x1 + raio, y1 + raio,
@@ -155,83 +98,50 @@ class Circulo(Figura):
         x1, y1 = self.valores[0], self.valores[1]
         x2, y2 = self.valores[2], self.valores[3]
         raio = math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
-
         return self.canvas.create_oval(
             x1 - raio, y1 - raio,
             x1 + raio, y1 + raio,
-            fill = self.cor_fill,
-            outline= self.cor_out
-        )
-
-class Triangulo(Figura):
-    def desenhar(self):
-        topo = (self.valores[0]+self.valores[2])/2
-        self.canvas.create_polygon(
-            topo, self.valores[1],
-            self.valores[2], self.valores[3],
-            self.valores[0], self.valores[3],
             fill=self.cor_fill,
             outline=self.cor_out
         )
 
 
-    def desenhar_provisorio(self):
-        topo = (self.valores[0] + self.valores[2]) / 2
-        return self.canvas.create_polygon(
-            topo, self.valores[1],
-            self.valores[2], self.valores[3],
-            self.valores[0], self.valores[3],
-            fill = self.cor_fill, outline= self.cor_out
-        )
-
-class Losango(Figura):
+class Poligono(Figura):
     def desenhar(self):
-        x1, y1 = self.valores[0], self.valores[1]
-        x2, y2 = self.valores[2], self.valores[3]
-        x_m = (x1 + x2) / 2
-        y_m = (y1 + y2) / 2
-        self.canvas.create_polygon(
-            x_m, y1, x2, y_m, x_m, y2, x1, y_m,
-            fill=self.cor_fill, outline=self.cor_out
-        )
+        if len(self.valores) >= 6:
+            self.canvas.create_polygon(
+                self.valores, fill=self.cor_fill, outline=self.cor_out
+            )
 
     def desenhar_provisorio(self):
-        x1, y1 = self.valores[0], self.valores[1]
-        x2, y2 = self.valores[2], self.valores[3]
-        x_m = (x1 + x2) / 2
-        y_m = (y1 + y2) / 2
-        return self.canvas.create_polygon(
-            x_m, y1, x2, y_m, x_m, y2, x1, y_m,
-            fill = self.cor_fill, outline= self.cor_out
-        )
+        tag_temporaria = "temp_forma"
+        self.canvas.delete(tag_temporaria)
 
-class Peixe(Figura):
-    def desenhar(self):
-        x1, y1 = self.valores[0], self.valores[1]
-        x2, y2 = self.valores[2], self.valores[3]
-        x_mid = (x1 + x2) / 2
-        largura = x2 - x1
-        altura = y2 - y1
-        x_base1 = x1 + largura * 0.15
-        x_base2 = x1 + largura * 0.85
-        y_alt = y1 + altura * 0.4
-        self.canvas.create_polygon(
-            x_mid, y1, x2, y_alt, x_base1, y2, x_base2, y2, x1, y_alt,
-            fill=self.cor_fill, outline=self.cor_out
-        )
-    def desenhar_provisorio(self):
-        x1, y1 = self.valores[0], self.valores[1]
-        x2, y2 = self.valores[2], self.valores[3]
-        x_mid = (x1 + x2) / 2
-        largura = x2 - x1
-        altura = y2 - y1
-        x_base1 = x1 + largura * 0.15
-        x_base2 = x1 + largura * 0.85
-        y_alt = y1 + altura * 0.4
-        return self.canvas.create_polygon(
-            x_mid, y1, x2, y_alt, x_base1, y2, x_base2, y2, x1, y_alt,
-            fill=self.cor_fill, outline=self.cor_out
-        )
+        coords_vertices = self.valores[:-2]
+        cursor_x, cursor_y = self.valores[-2], self.valores[-1]
+
+        if len(coords_vertices) >= 4:
+            self.canvas.create_line(coords_vertices, fill=self.cor_out, tag=tag_temporaria)
+
+        if len(coords_vertices) >= 2:
+            ultimo_x, ultimo_y = coords_vertices[-2], coords_vertices[-1]
+            self.canvas.create_line(
+                ultimo_x, ultimo_y, cursor_x, cursor_y,
+                fill=self.cor_out, tag=tag_temporaria
+            )
+
+            p_inicio_x, p_inicio_y = coords_vertices[0], coords_vertices[1]
+            distancia_fechamento = math.sqrt((cursor_x - p_inicio_x) ** 2 + (cursor_y - p_inicio_y) ** 2)
+
+            if distancia_fechamento < 10:
+                self.canvas.create_rectangle(
+                    p_inicio_x - 5, p_inicio_y - 5, p_inicio_x + 5, p_inicio_y + 5,
+                    outline="red", fill="white", tag=tag_temporaria
+                )
+
+        return tag_temporaria
+
+
 class App:
     def __init__(self, root):
         self.root = root
@@ -240,6 +150,8 @@ class App:
         self.tipo_atual = None
         self.valores_atual = []
         self.id_provisorio = None
+        self.forma_em_andamento = False
+
         self.cor_fill = StringVar(self.root, value="")
         self.cor_out = StringVar(self.root, value="black")
         self.tipo_figura_var = StringVar(self.root, value="Rabisco")
@@ -253,8 +165,7 @@ class App:
         Label(toolbar, text="Forma: ").pack(side=LEFT, padx=5)
 
         seletor = OptionMenu(toolbar, self.tipo_figura_var, "Rabisco", "Rabisco", "Linha", "Retangulo", "Oval",
-                             "Circulo", "Triangulo", "Losango","Pentagono","Hexagono","Peixe"
-                             )
+                             "Circulo", "Poligono")
         seletor.pack(side=LEFT, padx=5)
 
         btn_cor_out = Button(toolbar, text="Cor da Linha", command=self.escolher_cor_in)
@@ -270,6 +181,7 @@ class App:
         self.canvas.bind("<Button-1>", self.ao_clicar)
         self.canvas.bind("<B1-Motion>", self.ao_arrastar)
         self.canvas.bind("<ButtonRelease-1>", self.ao_soltar)
+        self.canvas.bind("<Motion>", self.ao_mover)
 
     def escolher_cor_out(self):
         cor_in = colorchooser.askcolor(title="Escolha uma cor")
@@ -288,21 +200,58 @@ class App:
             "Retangulo": Retangulo,
             "Oval": Oval,
             "Circulo": Circulo,
-            "Triangulo": Triangulo,
-            "Losango": Losango,
-            "Pentagono": Pentagono,
-            "Hexagono": Hexagono,
-            "Peixe": Peixe
+            "Poligono": Poligono
         }
         return classes[self.tipo_figura_var.get()]
 
     def ao_clicar(self, event):
-        if self.tipo_figura_var.get() == "Rabisco":
-            self.valores_atual = [event.x, event.y]
+        if self.tipo_figura_var.get() == "Poligono":
+            if not self.forma_em_andamento:
+                self.valores_atual = [event.x, event.y]
+                self.forma_em_andamento = True
+            else:
+                p_inicio_x, p_inicio_y = self.valores_atual[0], self.valores_atual[1]
+                distancia_fechamento = math.sqrt((event.x - p_inicio_x) ** 2 + (event.y - p_inicio_y) ** 2)
+
+                if distancia_fechamento < 10 and len(self.valores_atual) >= 6:
+                    figura = Poligono(self.canvas, self.valores_atual.copy(), self.cor_fill.get(), self.cor_out.get())
+                    figura.desenhar()
+                    self.figuras.append(figura)
+
+                    self.valores_atual = []
+                    self.forma_em_andamento = False
+                    if self.id_provisorio:
+                        self.canvas.delete(self.id_provisorio)
+                        self.id_provisorio = None
+                else:
+                    self.valores_atual.extend([event.x, event.y])
         else:
-            self.valores_atual = [event.x, event.y, event.x, event.y]
+            if self.forma_em_andamento:
+                self.forma_em_andamento = False
+                if self.id_provisorio:
+                    self.canvas.delete(self.id_provisorio)
+                    self.id_provisorio = None
+                self.valores_atual = []
+
+            if self.tipo_figura_var.get() == "Rabisco":
+                self.valores_atual = [event.x, event.y]
+            else:
+                self.valores_atual = [event.x, event.y, event.x, event.y]
+
+    def ao_mover(self, event):
+        if self.tipo_figura_var.get() == "Poligono" and self.forma_em_andamento:
+            valores_temp = self.valores_atual + [event.x, event.y]
+            figura = Poligono(self.canvas, valores_temp, self.cor_fill.get(), self.cor_out.get())
+
+            if self.id_provisorio:
+                self.canvas.delete(self.id_provisorio)
+
+            self.id_provisorio = figura.desenhar_provisorio()
 
     def ao_arrastar(self, event):
+        if self.tipo_figura_var.get() == "Poligono":
+            return
+
         if self.id_provisorio:
             self.canvas.delete(self.id_provisorio)
 
@@ -319,6 +268,9 @@ class App:
         self.id_provisorio = figura.desenhar_provisorio()
 
     def ao_soltar(self, event):
+        if self.tipo_figura_var.get() == "Poligono":
+            return
+
         if self.id_provisorio:
             self.canvas.delete(self.id_provisorio)
             self.id_provisorio = None
