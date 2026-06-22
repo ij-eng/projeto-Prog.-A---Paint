@@ -23,6 +23,6 @@ class Circulo(Figura):
         return self.canvas.create_oval(
             x1 - raio, y1 - raio,
             x1 + raio, y1 + raio,
-            dash=(4, 2),fill = self.cor_fill,
+            fill = self.cor_fill,
             outline= self.cor_out
         )

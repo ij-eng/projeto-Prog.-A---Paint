@@ -23,5 +23,5 @@ class Hexagono(Figura):
         x_tres_quartos = x1 + largura * 0.75
         return self.canvas.create_polygon(
             x_um_quarto, y1, x_tres_quartos, y1, x2, y_mid, x_tres_quartos, y2, x_um_quarto, y2, x1, y_mid,
-            dash=(4, 2), fill=self.cor_fill, outline=self.cor_out
+            fill=self.cor_fill, outline=self.cor_out
         )

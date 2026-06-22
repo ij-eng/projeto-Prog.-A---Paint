@@ -27,5 +27,5 @@ class Pentagono(Figura):
         y_ombro = y1 + altura * 0.4
         return self.canvas.create_polygon(
             x_mid, y1, x2, y_ombro, x_base2, y2, x_base1, y2, x1, y_ombro,
-            dash=(4, 2), fill=self.cor_fill, outline=self.cor_out
+            fill=self.cor_fill, outline=self.cor_out
         )

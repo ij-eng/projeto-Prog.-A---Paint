@@ -7,4 +7,4 @@ class Rabisco(Figura):
 
     def desenhar_provisorio(self):
         if len(self.valores) > 1:
-            return self.canvas.create_line(self.valores, dash=(4, 2), fill=self.cor_out)
+            return self.canvas.create_line(self.valores, fill=self.cor_out)

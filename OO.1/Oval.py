@@ -14,6 +14,6 @@ class Oval(Figura):
         return self.canvas.create_oval(
             self.valores[0], self.valores[1],
             self.valores[2], self.valores[3],
-            dash=(4, 2),fill = self.cor_fill,
+            fill = self.cor_fill,
             outline= self.cor_out
         )
