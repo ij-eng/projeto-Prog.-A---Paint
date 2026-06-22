@@ -6,20 +6,19 @@ from Linha import *
 from Retangulo import *
 from Oval import *
 from Circulo import *
-from Triangulo import *
-from Losango import *
-from Pentagono import *
-from Hexagono import *
-from Peixe import *
+from Poligono import *
+from math import sqrt
 
 class App:
     def __init__(self, root):
         self.root = root
-        self.root.title("Paint OO.1")
+        self.root.title("OO.1")
         self.figuras = []
         self.tipo_atual = None
         self.valores_atual = []
         self.id_provisorio = None
+        self.forma_em_andamento = False
+
         self.cor_fill = StringVar(self.root, value="")
         self.cor_out = StringVar(self.root, value="black")
         self.tipo_figura_var = StringVar(self.root, value="Rabisco")
@@ -33,8 +32,7 @@ class App:
         Label(toolbar, text="Forma: ").pack(side=LEFT, padx=5)
 
         seletor = OptionMenu(toolbar, self.tipo_figura_var, "Rabisco", "Rabisco", "Linha", "Retangulo", "Oval",
-                             "Circulo", "Triangulo", "Losango","Pentagono","Hexagono","Peixe"
-                             )
+                             "Circulo", "Poligono")
         seletor.pack(side=LEFT, padx=5)
 
         btn_cor_out = Button(toolbar, text="Cor da Linha", command=self.escolher_cor_in)
@@ -50,6 +48,8 @@ class App:
         self.canvas.bind("<Button-1>", self.ao_clicar)
         self.canvas.bind("<B1-Motion>", self.ao_arrastar)
         self.canvas.bind("<ButtonRelease-1>", self.ao_soltar)
+        self.canvas.bind("<Motion>", self.ao_mover)
+        self.canvas.bind("<Double-Button-1>", self.ao_duplo_clique)
 
     def escolher_cor_out(self):
         cor_in = colorchooser.askcolor(title="Escolha uma cor")
@@ -68,21 +68,78 @@ class App:
             "Retangulo": Retangulo,
             "Oval": Oval,
             "Circulo": Circulo,
-            "Triangulo": Triangulo,
-            "Losango": Losango,
-            "Pentagono": Pentagono,
-            "Hexagono": Hexagono,
-            "Peixe": Peixe
+            "Poligono": Poligono
         }
         return classes[self.tipo_figura_var.get()]
 
-    def ao_clicar(self, event):
+    def incompleta(self):
         if self.tipo_figura_var.get() == "Rabisco":
-            self.valores_atual = [event.x, event.y]
+            return len(self.valores_atual) <= 4 and self.valores_atual[0] == self.valores_atual[2] and self.valores_atual[1] == self.valores_atual[3]
+        return self.valores_atual[0] == self.valores_atual[2] and self.valores_atual[1] == self.valores_atual[3]
+
+    def ao_clicar(self, event):
+        if self.tipo_figura_var.get() == "Poligono":
+            if not self.forma_em_andamento:
+                self.valores_atual = [event.x, event.y]
+                self.forma_em_andamento = True
+            else:
+                p_inicio_x, p_inicio_y = self.valores_atual[0], self.valores_atual[1]
+                distancia_fechamento = sqrt((event.x - p_inicio_x) ** 2 + (event.y - p_inicio_y) ** 2)
+
+                if distancia_fechamento < 10 and len(self.valores_atual) >= 6:
+                    figura = Poligono(self.canvas, self.valores_atual.copy(), self.cor_fill.get(), self.cor_out.get())
+                    figura.desenhar()
+                    self.figuras.append(figura)
+
+                    self.valores_atual = []
+                    self.forma_em_andamento = False
+                    if self.id_provisorio:
+                        self.canvas.delete(self.id_provisorio)
+                        self.id_provisorio = None
+                else:
+                    self.valores_atual.extend([event.x, event.y])
         else:
-            self.valores_atual = [event.x, event.y, event.x, event.y]
+            if self.forma_em_andamento:
+                self.forma_em_andamento = False
+                if self.id_provisorio:
+                    self.canvas.delete(self.id_provisorio)
+                    self.id_provisorio = None
+                self.valores_atual = []
+
+            if self.tipo_figura_var.get() == "Rabisco":
+                self.valores_atual = [event.x, event.y]
+            else:
+                self.valores_atual = [event.x, event.y, event.x, event.y]
+
+    def ao_duplo_clique(self, event):
+        if self.tipo_figura_var.get() == "Poligono" and self.forma_em_andamento:
+            coordenadas = self.valores_atual.copy()
+            if len(coordenadas) >= 8:
+                coordenadas = coordenadas[:-2]
+            if len(coordenadas) >= 6:
+                figura = Poligono(self.canvas, coordenadas, self.cor_fill.get(), self.cor_out.get())
+                figura.desenhar()
+                self.figuras.append(figura)
+            self.valores_atual = []
+            self.forma_em_andamento = False
+            if self.id_provisorio:
+                self.canvas.delete(self.id_provisorio)
+                self.id_provisorio = None
+
+    def ao_mover(self, event):
+        if self.tipo_figura_var.get() == "Poligono" and self.forma_em_andamento:
+            valores_temp = self.valores_atual + [event.x, event.y]
+            figura = Poligono(self.canvas, valores_temp, self.cor_fill.get(), self.cor_out.get())
+
+            if self.id_provisorio:
+                self.canvas.delete(self.id_provisorio)
+
+            self.id_provisorio = figura.desenhar_provisorio()
 
     def ao_arrastar(self, event):
+        if self.tipo_figura_var.get() == "Poligono":
+            return
+
         if self.id_provisorio:
             self.canvas.delete(self.id_provisorio)
 
@@ -99,6 +156,9 @@ class App:
         self.id_provisorio = figura.desenhar_provisorio()
 
     def ao_soltar(self, event):
+        if self.tipo_figura_var.get() == "Poligono":
+            return
+
         if self.id_provisorio:
             self.canvas.delete(self.id_provisorio)
             self.id_provisorio = None
@@ -112,9 +172,10 @@ class App:
             self.valores_atual[2] = event.x
             self.valores_atual[3] = event.y
 
-        figura = classe(self.canvas, self.valores_atual, self.cor_fill.get(), self.cor_out.get())
-        figura.desenhar()
-        self.figuras.append(figura)
+        if not self.incompleta():
+            figura = classe(self.canvas, self.valores_atual, self.cor_fill.get(), self.cor_out.get())
+            figura.desenhar()
+            self.figuras.append(figura)
         self.valores_atual = []
 
 
