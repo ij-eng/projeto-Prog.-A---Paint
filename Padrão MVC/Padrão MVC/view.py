@@ -2,37 +2,42 @@ from math import sqrt
 from tkinter import *
 from tkinter import colorchooser
 from tkinter.ttk import *
-from model import *
+
+class FormasModelo:
+    def __init__(self, canvas, valores, cor_fill, cor_out):
+        self.canvas = canvas
+        self.valores = valores
+        self.cor_fill = cor_fill if cor_fill != "" else ""
+        self.cor_out = cor_out
+
+    def desenhar(self): pass
+    def desenhar_provisorio(self): pass
+
 
 class Linha(FormasModelo):
     def desenhar(self):
-        self.canvas.create_line(
-            self.valores[0], self.valores[1],
-            self.valores[2], self.valores[3],
-            fill=self.cor_out
-        )
-
-    def desenhar_provisorio(self):
         return self.canvas.create_line(
             self.valores[0], self.valores[1],
             self.valores[2], self.valores[3],
             fill=self.cor_out
         )
 
+    def desenhar_provisorio(self):
+        return self.desenhar()
+
 
 class Rabisco(FormasModelo):
     def desenhar(self):
         if len(self.valores) > 1:
-            self.canvas.create_line(self.valores, fill=self.cor_out)
+            return self.canvas.create_line(self.valores, fill=self.cor_out)
 
     def desenhar_provisorio(self):
-        if len(self.valores) > 1:
-            return self.canvas.create_line(self.valores, fill=self.cor_out)
+        return self.desenhar()
 
 
 class Retangulo(FormasModelo):
     def desenhar(self):
-        self.canvas.create_rectangle(
+        return self.canvas.create_rectangle(
             self.valores[0], self.valores[1],
             self.valores[2], self.valores[3],
             fill=self.cor_fill,
@@ -40,29 +45,20 @@ class Retangulo(FormasModelo):
         )
 
     def desenhar_provisorio(self):
-        return self.canvas.create_rectangle(
-            self.valores[0], self.valores[1],
-            self.valores[2], self.valores[3],
-            fill=self.cor_fill, outline=self.cor_out
-        )
+        return self.desenhar()
 
 
 class Oval(FormasModelo):
     def desenhar(self):
-        self.canvas.create_oval(
-            self.valores[0], self.valores[1],
-            self.valores[2], self.valores[3],
-            fill=self.cor_fill,
-            outline=self.cor_out
-        )
-
-    def desenhar_provisorio(self):
         return self.canvas.create_oval(
             self.valores[0], self.valores[1],
             self.valores[2], self.valores[3],
             fill=self.cor_fill,
             outline=self.cor_out
         )
+
+    def desenhar_provisorio(self):
+        return self.desenhar()
 
 
 class Circulo(FormasModelo):
@@ -70,19 +66,6 @@ class Circulo(FormasModelo):
         x1, y1 = self.valores[0], self.valores[1]
         x2, y2 = self.valores[2], self.valores[3]
         raio = sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
-
-        self.canvas.create_oval(
-            x1 - raio, y1 - raio,
-            x1 + raio, y1 + raio,
-            fill=self.cor_fill,
-            outline=self.cor_out
-        )
-
-    def desenhar_provisorio(self):
-        x1, y1 = self.valores[0], self.valores[1]
-        x2, y2 = self.valores[2], self.valores[3]
-        raio = sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
-
         return self.canvas.create_oval(
             x1 - raio, y1 - raio,
             x1 + raio, y1 + raio,
@@ -90,16 +73,20 @@ class Circulo(FormasModelo):
             outline=self.cor_out
         )
 
+    def desenhar_provisorio(self):
+        return self.desenhar()
+
 
 class Poligono(FormasModelo):
     def desenhar(self):
         if len(self.valores) >= 6:
-            self.canvas.create_polygon(
+            return self.canvas.create_polygon(
                 self.valores, fill=self.cor_fill, outline=self.cor_out
             )
 
     def desenhar_provisorio(self):
         return self.canvas.create_line(self.valores, fill=self.cor_out)
+
 
 class View:
     def __init__(self, root, controller):
@@ -112,7 +99,6 @@ class View:
         self.tipo_figura_var = StringVar(self.root, value="Rabisco")
 
         self.id_provisorio = None
-        self.tag_temporaria = "temp_forma"
 
         self.interface()
         self.configurar_eventos()
@@ -132,6 +118,9 @@ class View:
 
         btn_cor_in = Button(toolbar, text="Cor do Preenchimento", command=self.controller.escolher_cor_out)
         btn_cor_in.pack(side=LEFT, padx=5)
+
+        btn_transparente = Button(toolbar, text="Tornar Transparente", command=self.controller.definir_transparente)
+        btn_transparente.pack(side=LEFT, padx=5)
 
         self.canvas = Canvas(self.root, bg="white", width=1440, height=800)
         self.canvas.pack(side=TOP, fill=BOTH, expand=True)
