@@ -5,7 +5,7 @@ from model import *
 
 class Controller:
     def __init__(self, root):
-        self.model = AppModelo()
+        self.model = Model()
         self.view = View(root, self)
         self.tipo_figura_var = self.view.tipo_figura_var
         self.cor_fill = self.view.cor_fill_var
@@ -58,6 +58,9 @@ class Controller:
         if cor_outl[1]:
             self.cor_out.set(cor_outl[1])
 
+    def definir_transparente(self):
+        self.cor_fill.set("")
+
     def ao_clicar(self, event):
         if self.tipo_figura_var.get() == "Poligono":
             if not self.forma_em_andamento:
@@ -68,7 +71,8 @@ class Controller:
                 distancia_fechamento = sqrt((event.x - p_inicio_x) ** 2 + (event.y - p_inicio_y) ** 2)
 
                 if distancia_fechamento < 10 and len(self.valores_atual) >= 6:
-                    figura = Poligono(self.canvas, self.valores_atual.copy(), self.cor_fill.get(), self.cor_out.get())
+                    classe = self.view.obter_figura_classe()
+                    figura = classe(self.canvas, self.valores_atual.copy(), self.cor_fill.get(), self.cor_out.get())
                     figura.desenhar()
                     self.figuras.append(figura)
 
@@ -92,14 +96,14 @@ class Controller:
             else:
                 self.valores_atual = [event.x, event.y, event.x, event.y]
 
-
     def ao_duplo_clique(self, event):
         if self.tipo_figura_var.get() == "Poligono" and self.forma_em_andamento:
             coordenadas = self.valores_atual.copy()
             if len(coordenadas) >= 8:
                 coordenadas = coordenadas[:-2]
             if len(coordenadas) >= 6:
-                figura = Poligono(self.canvas, coordenadas, self.cor_fill.get(), self.cor_out.get())
+                classe = self.view.obter_figura_classe()
+                figura = classe(self.canvas, coordenadas, self.cor_fill.get(), self.cor_out.get())
                 figura.desenhar()
                 self.figuras.append(figura)
             self.valores_atual = []
@@ -108,17 +112,16 @@ class Controller:
                 self.canvas.delete(self.id_provisorio)
                 self.id_provisorio = None
 
-
     def ao_mover(self, event):
         if self.tipo_figura_var.get() == "Poligono" and self.forma_em_andamento:
             valores_temp = self.valores_atual + [event.x, event.y]
-            figura = Poligono(self.canvas, valores_temp, self.cor_fill.get(), self.cor_out.get())
+            classe = self.view.obter_figura_classe()
+            figura = classe(self.canvas, valores_temp, self.cor_fill.get(), self.cor_out.get())
 
             if self.id_provisorio:
                 self.canvas.delete(self.id_provisorio)
 
             self.id_provisorio = figura.desenhar_provisorio()
-
 
     def ao_arrastar(self, event):
         if self.tipo_figura_var.get() == "Poligono":
@@ -138,7 +141,6 @@ class Controller:
 
         figura = classe(self.canvas, self.valores_atual, self.cor_fill.get(), self.cor_out.get())
         self.id_provisorio = figura.desenhar_provisorio()
-
 
     def ao_soltar(self, event):
         if self.tipo_figura_var.get() == "Poligono":
