@@ -3,6 +3,7 @@ from tkinter import colorchooser
 from view import *
 from model import *
 
+
 class Controller:
     def __init__(self, root):
         self.model = Model()
@@ -10,7 +11,6 @@ class Controller:
         self.tipo_figura_var = self.view.tipo_figura_var
         self.cor_fill = self.view.cor_fill_var
         self.cor_out = self.view.cor_out_var
-        self.canvas = self.view.canvas
 
     @property
     def figuras(self):
@@ -37,130 +37,153 @@ class Controller:
         self.model.forma_em_andamento = val
 
     @property
-    def id_provisorio(self):
-        return self.view.id_provisorio
+    def tipo_atual(self):
+        return self.model.tipo_atual
 
-    @id_provisorio.setter
-    def id_provisorio(self, val):
-        self.view.id_provisorio = val
-
-    def incompleta(self):
-        self.model.tipo_atual = self.tipo_figura_var.get()
-        return self.model.incompleta()
+    @tipo_atual.setter
+    def tipo_atual(self, val):
+        self.model.tipo_atual = val
 
     def escolher_cor_out(self):
-        cor_in = colorchooser.askcolor(title="Escolha uma cor")
-        if cor_in[1]:
-            self.cor_fill.set(cor_in[1])
+        cor = colorchooser.askcolor(title="Escolha a cor da linha")
+        if cor[1]:
+            self.cor_out.set(cor[1])
 
     def escolher_cor_in(self):
-        cor_outl = colorchooser.askcolor(title="Escolha uma cor")
-        if cor_outl[1]:
-            self.cor_out.set(cor_outl[1])
+        cor = colorchooser.askcolor(title="Escolha a cor do preenchimento")
+        if cor[1]:
+            self.cor_fill.set(cor[1])
 
     def definir_transparente(self):
         self.cor_fill.set("")
 
     def ao_clicar(self, event):
-        if self.tipo_figura_var.get() == "Poligono":
+        tipo = self.tipo_figura_var.get()
+        if tipo == "Poligono":
             if not self.forma_em_andamento:
                 self.valores_atual = [event.x, event.y]
                 self.forma_em_andamento = True
+
             else:
                 p_inicio_x, p_inicio_y = self.valores_atual[0], self.valores_atual[1]
                 distancia_fechamento = sqrt((event.x - p_inicio_x) ** 2 + (event.y - p_inicio_y) ** 2)
 
                 if distancia_fechamento < 10 and len(self.valores_atual) >= 6:
-                    classe = self.view.obter_figura_classe()
-                    figura = classe(self.canvas, self.valores_atual.copy(), self.cor_fill.get(), self.cor_out.get())
-                    figura.desenhar()
-                    self.figuras.append(figura)
+                    dados_figura = {
+                        "tipo": tipo,
+                        "valores": self.valores_atual.copy(),
+                        "cor_fill": self.cor_fill.get(),
+                        "cor_out": self.cor_out.get()
+                    }
+                    self.figuras.append(dados_figura)
+
+                    self.view.desenhar_definitivo(self.valores_atual, self.cor_fill.get(), self.cor_out.get())
+                    self.view.deletar_provisorio()
 
                     self.valores_atual = []
                     self.forma_em_andamento = False
-                    if self.id_provisorio:
-                        self.canvas.delete(self.id_provisorio)
-                        self.id_provisorio = None
+
                 else:
                     self.valores_atual.extend([event.x, event.y])
         else:
             if self.forma_em_andamento:
                 self.forma_em_andamento = False
-                if self.id_provisorio:
-                    self.canvas.delete(self.id_provisorio)
-                    self.id_provisorio = None
+                self.view.deletar_provisorio()
                 self.valores_atual = []
 
-            if self.tipo_figura_var.get() == "Rabisco":
+            if tipo == "Rabisco":
                 self.valores_atual = [event.x, event.y]
+
             else:
                 self.valores_atual = [event.x, event.y, event.x, event.y]
 
+    def ao_arrastar(self, event):
+        tipo = self.tipo_figura_var.get()
+        if tipo == "Poligono":
+            return
+
+        if not self.valores_atual:
+            return
+
+        if tipo == "Rabisco":
+            self.valores_atual.append(event.x)
+            self.valores_atual.append(event.y)
+
+        else:
+            if len(self.valores_atual) >= 4:
+                self.valores_atual[2] = event.x
+                self.valores_atual[3] = event.y
+            else:
+                self.valores_atual = [self.valores_atual[0], self.valores_atual[1], event.x, event.y]
+        self.view.desenhar_provisorio(self.valores_atual, self.cor_fill.get(), self.cor_out.get())
+
+    def ao_soltar(self, event):
+        tipo = self.tipo_figura_var.get()
+
+        if tipo == "Poligono":
+            return
+
+        if not self.valores_atual:
+            return
+
+        self.view.deletar_provisorio()
+
+        if tipo == "Rabisco":
+            self.valores_atual.append(event.x)
+            self.valores_atual.append(event.y)
+
+        else:
+            if len(self.valores_atual) >= 4:
+                self.valores_atual[2] = event.x
+                self.valores_atual[3] = event.y
+            else:
+                self.valores_atual = [self.valores_atual[0], self.valores_atual[1], event.x, event.y]
+        self.tipo_atual = tipo
+
+        if not self.model.incompleta():
+            self.view.desenhar_definitivo(self.valores_atual, self.cor_fill.get(), self.cor_out.get())
+            dados_figura = {
+                "tipo": tipo,
+                "valores": self.valores_atual.copy(),
+                "cor_fill": self.cor_fill.get(),
+                "cor_out": self.cor_out.get()
+            }
+            self.figuras.append(dados_figura)
+        self.valores_atual = []
+
+        if not self.model.incompleta():
+            self.view.desenhar_definitivo(self.valores_atual, self.cor_fill.get(), self.cor_out.get())
+            dados_figura = {
+                "tipo": tipo,
+                "valores": self.valores_atual.copy(),
+                "cor_fill": self.cor_fill.get(),
+                "cor_out": self.cor_out.get()
+            }
+            self.figuras.append(dados_figura)
+        self.valores_atual = []
+
+    def ao_mover(self, event):
+        tipo = self.tipo_figura_var.get()
+        if tipo == "Poligono" and self.forma_em_andamento:
+            valores_temp = self.valores_atual + [event.x, event.y]
+            self.view.desenhar_provisorio(valores_temp, self.cor_fill.get(), self.cor_out.get())
+
     def ao_duplo_clique(self, event):
-        if self.tipo_figura_var.get() == "Poligono" and self.forma_em_andamento:
+        if self.forma_em_andamento:
             coordenadas = self.valores_atual.copy()
             if len(coordenadas) >= 8:
                 coordenadas = coordenadas[:-2]
             if len(coordenadas) >= 6:
-                classe = self.view.obter_figura_classe()
-                figura = classe(self.canvas, coordenadas, self.cor_fill.get(), self.cor_out.get())
-                figura.desenhar()
-                self.figuras.append(figura)
+                self.view.desenhar_definitivo(coordenadas, self.cor_fill.get(), self.cor_out.get())
+
+                dados_figura = {
+                    "tipo": "Poligono",
+                    "valores": coordenadas,
+                    "cor_fill": self.cor_fill.get(),
+                    "cor_out": self.cor_out.get()
+                }
+                self.figuras.append(dados_figura)
+
             self.valores_atual = []
             self.forma_em_andamento = False
-            if self.id_provisorio:
-                self.canvas.delete(self.id_provisorio)
-                self.id_provisorio = None
-
-    def ao_mover(self, event):
-        if self.tipo_figura_var.get() == "Poligono" and self.forma_em_andamento:
-            valores_temp = self.valores_atual + [event.x, event.y]
-            classe = self.view.obter_figura_classe()
-            figura = classe(self.canvas, valores_temp, self.cor_fill.get(), self.cor_out.get())
-
-            if self.id_provisorio:
-                self.canvas.delete(self.id_provisorio)
-
-            self.id_provisorio = figura.desenhar_provisorio()
-
-    def ao_arrastar(self, event):
-        if self.tipo_figura_var.get() == "Poligono":
-            return
-
-        if self.id_provisorio:
-            self.canvas.delete(self.id_provisorio)
-
-        classe = self.view.obter_figura_classe()
-
-        if self.tipo_figura_var.get() == "Rabisco":
-            self.valores_atual.append(event.x)
-            self.valores_atual.append(event.y)
-        else:
-            self.valores_atual[2] = event.x
-            self.valores_atual[3] = event.y
-
-        figura = classe(self.canvas, self.valores_atual, self.cor_fill.get(), self.cor_out.get())
-        self.id_provisorio = figura.desenhar_provisorio()
-
-    def ao_soltar(self, event):
-        if self.tipo_figura_var.get() == "Poligono":
-            return
-
-        if self.id_provisorio:
-            self.canvas.delete(self.id_provisorio)
-            self.id_provisorio = None
-
-        classe = self.view.obter_figura_classe()
-
-        if self.tipo_figura_var.get() == "Rabisco":
-            self.valores_atual.append(event.x)
-            self.valores_atual.append(event.y)
-        else:
-            self.valores_atual[2] = event.x
-            self.valores_atual[3] = event.y
-
-        if not self.incompleta():
-            figura = classe(self.canvas, self.valores_atual, self.cor_fill.get(), self.cor_out.get())
-            figura.desenhar()
-            self.figuras.append(figura)
-        self.valores_atual = []
+            self.view.deletar_provisorio()
