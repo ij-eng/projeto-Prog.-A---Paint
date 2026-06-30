@@ -151,17 +151,6 @@ class Controller:
             self.figuras.append(dados_figura)
         self.valores_atual = []
 
-        if not self.model.incompleta():
-            self.view.desenhar_definitivo(self.valores_atual, self.cor_fill.get(), self.cor_out.get())
-            dados_figura = {
-                "tipo": tipo,
-                "valores": self.valores_atual.copy(),
-                "cor_fill": self.cor_fill.get(),
-                "cor_out": self.cor_out.get()
-            }
-            self.figuras.append(dados_figura)
-        self.valores_atual = []
-
     def ao_mover(self, event):
         tipo = self.tipo_figura_var.get()
         if tipo == "Poligono" and self.forma_em_andamento:
