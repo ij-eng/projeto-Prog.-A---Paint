@@ -6,6 +6,7 @@ class Model:
         self.valores_atual = []
         self.forma_em_andamento = False
         self.tipo_atual = "Rabisco"
+        self.id_provisorio = None
 
     def incompleta(self):
         if len(self.valores_atual) < 4:
@@ -16,6 +17,34 @@ class Model:
                 return self.valores_atual[0] == self.valores_atual[2] and self.valores_atual[1] == self.valores_atual[3]
             return False
         return self.valores_atual[0] == self.valores_atual[2] and self.valores_atual[1] == self.valores_atual[3]
+
+    def obter_figura_classe(self, tipo):
+        classes = {
+            "Linha": Linha,
+            "Rabisco": Rabisco,
+            "Retangulo": Retangulo,
+            "Oval": Oval,
+            "Circulo": Circulo,
+            "Poligono": Poligono
+        }
+        return classes[tipo]
+
+    def deletar_provisorio(self, canvas):
+        if self.id_provisorio:
+            canvas.delete(self.id_provisorio)
+            self.id_provisorio = None
+
+    def desenhar_definitivo(self, canvas, tipo, valores, cor_fill, cor_out):
+        classe = self.obter_figura_classe(tipo)
+        figura = classe(valores, cor_fill, cor_out)
+        figura.desenhar(canvas)
+
+    def desenhar_provisorio(self, canvas, tipo, valores, cor_fill, cor_out):
+        self.deletar_provisorio(canvas)
+        classe = self.obter_figura_classe(tipo)
+        figura = classe(valores, cor_fill, cor_out)
+        self.id_provisorio = figura.desenhar_provisorio(canvas)
+
 
 class FormasModelo:
     def __init__(self, valores, cor_fill, cor_out):
