@@ -1,6 +1,4 @@
-from math import sqrt
 from tkinter import *
-from tkinter import colorchooser
 from tkinter.ttk import *
 from model import FormasModelo, Linha, Rabisco, Retangulo, Oval, Circulo, Poligono
 
