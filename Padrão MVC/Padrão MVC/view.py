@@ -13,8 +13,6 @@ class View:
         self.cor_out_var = StringVar(self.root, value="black")
         self.tipo_figura_var = StringVar(self.root, value="Rabisco")
 
-        self.id_provisorio = None
-
         self.interface()
         self.configurar_eventos()
 
@@ -51,31 +49,3 @@ class View:
             self.canvas.bind("<Double-Button-1>", self.controller.ao_duplo_clique)
         else:
             self.canvas.unbind("<Double-Button-1>")
-
-    def deletar_provisorio(self):
-        if self.id_provisorio:
-            self.canvas.delete(self.id_provisorio)
-            self.id_provisorio = None
-
-    def obter_figura_classe(self):
-        tipo = self.tipo_figura_var.get()
-        classes = {
-            "Linha": Linha,
-            "Rabisco": Rabisco,
-            "Retangulo": Retangulo,
-            "Oval": Oval,
-            "Circulo": Circulo,
-            "Poligono": Poligono
-        }
-        return classes[tipo]
-
-    def desenhar_definitivo(self, valores, cor_fill, cor_out):
-        classe = self.obter_figura_classe()
-        figura = classe(valores, cor_fill, cor_out)
-        figura.desenhar(self.canvas)
-
-    def desenhar_provisorio(self, valores, cor_fill, cor_out):
-        self.deletar_provisorio()
-        classe = self.obter_figura_classe()
-        figura = classe(valores, cor_fill, cor_out)
-        self.id_provisorio = figura.desenhar_provisorio(self.canvas)
