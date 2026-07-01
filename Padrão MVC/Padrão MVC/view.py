@@ -2,84 +2,7 @@ from math import sqrt
 from tkinter import *
 from tkinter import colorchooser
 from tkinter.ttk import *
-
-
-class Formas:
-    def __init__(self, canvas, valores, cor_fill, cor_out):
-        self.canvas = canvas
-        self.valores = valores
-        self.cor_fill = cor_fill if cor_fill != "" else ""
-        self.cor_out = cor_out
-
-    def desenhar(self): pass
-
-    def desenhar_provisorio(self): pass
-
-
-class Linha(Formas):
-    def desenhar(self):
-        return self.canvas.create_line(
-            self.valores[0], self.valores[1],
-            self.valores[2], self.valores[3],
-            fill=self.cor_out
-        )
-    def desenhar_provisorio(self):
-        return self.desenhar()
-
-
-class Rabisco(Formas):
-    def desenhar(self):
-        if len(self.valores) > 1:
-            return self.canvas.create_line(self.valores, fill=self.cor_out)
-    def desenhar_provisorio(self):
-        return self.desenhar()
-
-
-class Retangulo(Formas):
-    def desenhar(self):
-        return self.canvas.create_rectangle(
-            self.valores[0], self.valores[1],
-            self.valores[2], self.valores[3],
-            fill=self.cor_fill, outline=self.cor_out
-        )
-    def desenhar_provisorio(self):
-        return self.desenhar()
-
-
-class Oval(Formas):
-    def desenhar(self):
-        return self.canvas.create_oval(
-            self.valores[0], self.valores[1],
-            self.valores[2], self.valores[3],
-            fill=self.cor_fill, outline=self.cor_out
-        )
-    def desenhar_provisorio(self):
-        return self.desenhar()
-
-
-class Circulo(Formas):
-    def desenhar(self):
-        x1, y1, x2, y2 = self.valores[0], self.valores[1], self.valores[2], self.valores[3]
-        raio = sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
-        return self.canvas.create_oval(
-            x1 - raio, y1 - raio,
-            x1 + raio, y1 + raio,
-            fill=self.cor_fill, outline=self.cor_out
-        )
-    def desenhar_provisorio(self):
-        return self.desenhar()
-
-
-class Poligono(Formas):
-    def desenhar(self):
-        if len(self.valores) >= 4:
-            return self.canvas.create_polygon(
-                self.valores,
-                fill=self.cor_fill, outline=self.cor_out
-            )
-    def desenhar_provisorio(self):
-        if len(self.valores) >= 4:
-            return self.canvas.create_line(self.valores, fill=self.cor_out)
+from model import FormasModelo, Linha, Rabisco, Retangulo, Oval, Circulo, Poligono
 
 
 class View:
@@ -125,7 +48,8 @@ class View:
         self.atualizar_binding_duplo_clique()
 
     def atualizar_binding_duplo_clique(self, *args):
-        if self.tipo_figura_var.get() == "Poligono":
+        tipo = self.tipo_figura_var.get()
+        if tipo == "Poligono":
             self.canvas.bind("<Double-Button-1>", self.controller.ao_duplo_clique)
         else:
             self.canvas.unbind("<Double-Button-1>")
@@ -145,15 +69,15 @@ class View:
             "Circulo": Circulo,
             "Poligono": Poligono
         }
-        return classes[self.tipo_figura_var.get()]
+        return classes[tipo]
 
     def desenhar_definitivo(self, valores, cor_fill, cor_out):
         classe = self.obter_figura_classe()
-        figura = classe(self.canvas, valores, cor_fill, cor_out)
-        figura.desenhar()
+        figura = classe(valores, cor_fill, cor_out)
+        figura.desenhar(self.canvas)
 
     def desenhar_provisorio(self, valores, cor_fill, cor_out):
         self.deletar_provisorio()
         classe = self.obter_figura_classe()
-        figura = classe(self.canvas, valores, cor_fill, cor_out)
-        self.id_provisorio = figura.desenhar_provisorio()
+        figura = classe(valores, cor_fill, cor_out)
+        self.id_provisorio = figura.desenhar_provisorio(self.canvas)
