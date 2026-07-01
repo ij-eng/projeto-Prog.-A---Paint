@@ -106,6 +106,11 @@ class Controller:
     def ao_duplo_clique(self, event):
         if self.model.forma_em_andamento:
             coordenadas = self.model.valores_atual.copy()
+            if len(coordenadas) >= 8:
+                coordenadas = coordenadas[:-2]
+            self.model.valores_atual = []
+            self.model.forma_em_andamento = False
+            self.view.deletar_provisorio()
             if len(coordenadas) >= 6:
                 self.view.desenhar_definitivo(coordenadas, self.cor_fill.get(), self.cor_out.get())
                 self.model.figuras.append(
@@ -116,8 +121,3 @@ class Controller:
                         "cor_out": self.cor_out.get()
                     }
                 )
-            elif len(coordenadas) >= 8:
-                coordenadas = coordenadas[:-2]
-            self.model.valores_atual = []
-            self.model.forma_em_andamento = False
-            self.view.deletar_provisorio()
