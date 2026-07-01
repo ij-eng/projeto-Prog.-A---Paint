@@ -44,8 +44,11 @@ class Controller:
                         "cor_out": self.cor_out.get()
                     }
                     self.model.figuras.append(dados_figura)
-                    self.view.desenhar_definitivo(self.model.valores_atual, self.cor_fill.get(), self.cor_out.get())
-                    self.view.deletar_provisorio()
+
+                    self.model.desenhar_definitivo(self.view.canvas, tipo, self.model.valores_atual,
+                                                   self.cor_fill.get(), self.cor_out.get())
+                    self.model.deletar_provisorio(self.view.canvas)
+
                     self.model.valores_atual = []
                     self.model.forma_em_andamento = False
                 else:
@@ -53,7 +56,7 @@ class Controller:
         else:
             if self.model.forma_em_andamento:
                 self.model.forma_em_andamento = False
-                self.view.deletar_provisorio()
+                self.model.deletar_provisorio(self.view.canvas)
                 self.model.valores_atual = []
             if tipo == "Rabisco":
                 self.model.valores_atual = [event.x, event.y]
@@ -72,14 +75,16 @@ class Controller:
                 self.model.valores_atual[2:4] = [event.x, event.y]
             else:
                 self.model.valores_atual = [self.model.valores_atual[0], self.model.valores_atual[1], event.x, event.y]
-        self.view.desenhar_provisorio(self.model.valores_atual, self.cor_fill.get(), self.cor_out.get())
+
+        self.model.desenhar_provisorio(self.view.canvas, tipo, self.model.valores_atual, self.cor_fill.get(),
+                                       self.cor_out.get())
 
     def ao_soltar(self, event):
         tipo = self.tipo_figura_var.get()
         if tipo == "Poligono" or not self.model.valores_atual:
             return
 
-        self.view.deletar_provisorio()
+        self.model.deletar_provisorio(self.view.canvas)
         if tipo == "Rabisco":
             self.model.valores_atual.extend([event.x, event.y])
         else:
@@ -88,7 +93,8 @@ class Controller:
         self.model.tipo_atual = tipo
 
         if not self.model.incompleta():
-            self.view.desenhar_definitivo(self.model.valores_atual, self.cor_fill.get(), self.cor_out.get())
+            self.model.desenhar_definitivo(self.view.canvas, tipo, self.model.valores_atual, self.cor_fill.get(),
+                                           self.cor_out.get())
             dados_figura = {
                 "tipo": tipo,
                 "valores": self.model.valores_atual.copy(),
@@ -99,9 +105,11 @@ class Controller:
         self.model.valores_atual = []
 
     def ao_mover(self, event):
-        if self.tipo_figura_var.get() == "Poligono" and self.model.forma_em_andamento:
+        tipo = self.tipo_figura_var.get()
+        if tipo == "Poligono" and self.model.forma_em_andamento:
             valores_temp = self.model.valores_atual + [event.x, event.y]
-            self.view.desenhar_provisorio(valores_temp, self.cor_fill.get(), self.cor_out.get())
+            self.model.desenhar_provisorio(self.view.canvas, tipo, valores_temp, self.cor_fill.get(),
+                                           self.cor_out.get())
 
     def ao_duplo_clique(self, event):
         if self.model.forma_em_andamento:
@@ -110,9 +118,10 @@ class Controller:
                 coordenadas = coordenadas[:-2]
             self.model.valores_atual = []
             self.model.forma_em_andamento = False
-            self.view.deletar_provisorio()
+            self.model.deletar_provisorio(self.view.canvas)
             if len(coordenadas) >= 6:
-                self.view.desenhar_definitivo(coordenadas, self.cor_fill.get(), self.cor_out.get())
+                self.model.desenhar_definitivo(self.view.canvas, "Poligono", coordenadas, self.cor_fill.get(),
+                                               self.cor_out.get())
                 self.model.figuras.append(
                     {
                         "tipo": "Poligono",
