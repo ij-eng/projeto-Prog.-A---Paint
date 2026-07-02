@@ -1,6 +1,6 @@
 from tkinter import *
 from tkinter.ttk import *
-from model import FormasModelo, Linha, Rabisco, Retangulo, Oval, Circulo, Poligono
+from Model.model import FormasModelo, Linha, Rabisco, Retangulo, Oval, Circulo, Poligono
 
 
 class View:

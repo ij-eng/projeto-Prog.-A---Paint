@@ -1,7 +1,7 @@
 from math import sqrt
 from tkinter import colorchooser
-from view import *
-from model import *
+from View.view import *
+from Model.model import *
 
 
 class Controller:

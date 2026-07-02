@@ -1,4 +1,4 @@
-from controller import *
+from Controller.controller import *
 
 root = Tk()
 app = Controller(root)
