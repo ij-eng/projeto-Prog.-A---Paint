@@ -43,6 +43,9 @@ class View:
         btn_agrupar = Button(toolbar, text="Agrupar", command=self.controller.agrupar_figuras)
         btn_agrupar.pack(side=LEFT, padx=5)
 
+        btn_ajuda = Button(toolbar, text="Ajuda", command=self.controller.mostrar_ajuda)
+        btn_ajuda.pack(side=LEFT, padx=5)
+
         self.canvas = Canvas(self.root, bg="white", width=1440, height=800)
         self.canvas.pack(side=TOP, fill=BOTH, expand=True)
 

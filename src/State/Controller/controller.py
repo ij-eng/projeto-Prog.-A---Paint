@@ -1,4 +1,4 @@
-from tkinter import colorchooser
+from tkinter import colorchooser, messagebox
 from View.view import *
 from Model.model import *
 from tkinter import filedialog
@@ -254,3 +254,27 @@ class Controller:
 
     def ao_clique_direito(self, event):
         self.estado_atual.ao_clique_direito(event)
+
+    def mostrar_ajuda(self):
+        texto_ajuda = (
+            "GUIA DE ATALHOS E FUNCIONALIDADES\n\n"
+            "SELEÇÃO E MOUSE:\n"
+            "- Selecionar: Escolha 'Selecionar' e clique em uma figura.\n"
+            "- Seleção Múltipla: Segure 'Ctrl' ao clicar em figuras ou clique e arraste para criar uma caixa de seleção.\n"
+            "- Tirar seleção: Para tirar uma seleção especifica segure 'Ctrl' e clique na figura desejada, para tirar a seleção de todas as figuras clique fora do desenho.\n\n"
+            "TECLADO:\n"
+            "- Ctrl + C : Copiar figuras selecionadas\n"
+            "- Ctrl + V : Colar figuras copiadas\n"
+            "- Ctrl + Z : Desfazer (Undo)\n"
+            "- Ctrl + Y : Refazer (Redo)\n"
+            "- Delete / Backspace : Apagar figuras selecionadas\n\n"
+            "CAMADAS (Com figuras selecionadas):\n"
+            "- Seta para Direita : Mover figura um nível para a frente\n"
+            "- Seta para Esquerda : Mover figura um nível para trás\n"
+            "- Seta para Cima : Trazer figura para o topo absoluto\n"
+            "- Seta para Baixo : Enviar figura para o fundo absoluto\n\n"
+            "FORMAS ESPECIAIS:\n"
+            "- Polígono: Clique para ir adicionando vértices. Dê um Duplo-clique para fechar a forma ou coloque a linha muito perto do primeiro ponto.\n"
+            "- Polígono Regular: Clique para definir o centro, mova para definir o tamanho. O botão direito do mouse diminui os lados. Duplo-clique finaliza."
+        )
+        messagebox.showinfo("Ajuda e Atalhos do Paint", texto_ajuda)
