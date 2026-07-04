@@ -103,6 +103,8 @@ class View:
         Button(toolbar, text="Cor Borda", command=self.escolher_cor(self.cor_out_var)).pack(side=LEFT, padx=5)
         Button(toolbar, text="Cor preenchimento", command=self.escolher_cor(self.cor_fill_var)).pack(side=LEFT, padx=5)
         Button(toolbar, text="Tornar Transparente", command= self.cor_fill_var.set("")).pack(side=LEFT, padx=5)
+        Button(toolbar, text="Salvar Desenho", command=self.controller.salvar_arquivo).pack(side = LEFT,padx = 5)
+        Button(toolbar, text="Abrir Desenho", command=self.controller.abrir_arquivo).pack(side=LEFT, padx=5)
 
         self.canvas = Canvas(root, bg="white", width=1200, height=700)
         self.canvas.pack(side=TOP, fill=BOTH, expand=True)
@@ -120,8 +122,7 @@ class View:
         c.bind("<ButtonRelease-1>", self.controller.ao_soltar)
         c.bind("<Motion>", self.controller.ao_mover)
         self.tipo_figura_var.trace_add("write", c.bind("<Double-Button-1>", self.controller.ao_duplo_clique) if self.tipo_figura_var.get() == "Poligono" else c.unbind("<Double-Button-1>"))
-
-
+    
 class Controller:
     def __init__(self, root):
         self.model = Model()
