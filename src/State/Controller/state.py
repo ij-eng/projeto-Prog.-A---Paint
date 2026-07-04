@@ -43,7 +43,6 @@ class SelecaoState(ControlState):
         tolerancia = 8
 
         figura_clicada = None
-
         ctrl = (event.state & 4) != 0
 
         for figura in reversed(self.model.figuras):
@@ -52,6 +51,9 @@ class SelecaoState(ControlState):
                 break
 
         if figura_clicada:
+
+            self.model.salvar_estado()
+            
             self.modo_selecionar_por_retangulo = False
             if ctrl:
                 if figura_clicada in self.model.figuras_selecionadas:
@@ -73,6 +75,8 @@ class SelecaoState(ControlState):
             self.y_inicio = py
 
             if not ctrl:
+                if self.model.figuras_selecionadas:
+                    self.model.salvar_estado()
                 for fig in self.model.figuras_selecionadas:
                     fig.destacar(self.view.canvas, False)
                 self.model.figuras_selecionadas.clear()

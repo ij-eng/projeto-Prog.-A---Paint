@@ -31,6 +31,13 @@ class Controller:
         root.bind("<Control-c>", self.copiar_figura)
         root.bind("<Control-v>", self.colar_figura)
 
+        root.bind("<Control-z>", self.undo)
+        root.bind("<Control-Z>", self.undo)
+        root.bind("<Control-y>", self.redo)
+        root.bind("<Control-Y>", self.redo)
+        self.view.canvas.bind("<Button-1>", lambda event: self.view.canvas.focus_set(), add="+")
+        self.view.canvas.focus_set()
+
     def salvar_arquivo(self):
         caminho_arquivo = filedialog.asksaveasfilename(
             defaultextension=".txt",
@@ -81,12 +88,14 @@ class Controller:
         self.estado_atual = estados[self.tipo_figura_var.get()]
 
     def deletar_figura(self, event=None):
-        for figura in self.model.figuras_selecionadas:
-            figura.deletar_do_canvas(self.view.canvas)
-            if figura in self.model.figuras:
-                self.model.figuras.remove(figura)
-        self.model.figuras_selecionadas.clear()
-        self.model.figura_selecionada = None
+        if self.model.figuras_selecionadas:
+            self.model.salvar_estado()
+            for figura in self.model.figuras_selecionadas:
+                figura.deletar_do_canvas(self.view.canvas)
+                if figura in self.model.figuras:
+                    self.model.figuras.remove(figura)
+            self.model.figuras_selecionadas.clear()
+            self.model.figura_selecionada = None
 
     def escolher_cor_out(self):
         cor = colorchooser.askcolor(title="Escolha a cor da borda")
@@ -111,12 +120,21 @@ class Controller:
 
     def mover_posicao_frente(self, event=None):
         canvas = self.view.canvas
-        for figura in self.model.figuras_selecionadas:
-            idx = self.model.figuras.index(figura)
-            if idx < len(self.model.figuras) - 1:
-                figura_frente = self.model.figuras[idx + 1]
-                self.model.figuras[idx], self.model.figuras[idx + 1] = self.model.figuras[idx + 1], self.model.figuras[idx]
+        figuras_totais = self.model.figuras
+        selecionadas = self.model.figuras_selecionadas
 
+        if not selecionadas: return
+        self.model.salvar_estado()
+        canvas.focus_set()
+        indices_ordenados = sorted(
+            [figuras_totais.index(f) for f in selecionadas], 
+            reverse=True
+        )
+        for idx in indices_ordenados:
+            if idx < len(figuras_totais) - 1:
+                figura = figuras_totais[idx]
+                figura_frente = figuras_totais[idx + 1]
+                figuras_totais[idx], figuras_totais[idx + 1] = figuras_totais[idx + 1], figuras_totais[idx]
                 frente_ids = figura_frente.obter_ids_canvas()
                 if frente_ids:
                     ultimo_id = frente_ids[-1]
@@ -126,12 +144,20 @@ class Controller:
 
     def mover_posicao_tras(self, event=None):
         canvas = self.view.canvas
-        for figura in reversed(self.model.figuras_selecionadas):
-            idx = self.model.figuras.index(figura)
-            if idx > 0:
-                figura_tras = self.model.figuras[idx - 1]
-                self.model.figuras[idx], self.model.figuras[idx - 1] = self.model.figuras[idx - 1], self.model.figuras[idx]
+        figuras_totais = self.model.figuras
+        selecionadas = self.model.figuras_selecionadas
+        if not selecionadas: return
+        self.model.salvar_estado()
+        canvas.focus_set()
+        indices_ordenados = sorted(
+            [figuras_totais.index(f) for f in selecionadas]
+        )
 
+        for idx in indices_ordenados:
+            if idx > 0:
+                figura = figuras_totais[idx]
+                figura_tras = figuras_totais[idx - 1]
+                figuras_totais[idx], figuras_totais[idx - 1] = figuras_totais[idx - 1], figuras_totais[idx]
                 tras_ids = figura_tras.obter_ids_canvas()
                 if tras_ids:
                     ultimo_id = tras_ids[0]
@@ -141,19 +167,37 @@ class Controller:
 
     def mover_topo(self, event=None):
         canvas = self.view.canvas
-        for figura in self.model.figuras_selecionadas:
+        if not self.model.figuras_selecionadas:
+            return
+        canvas.focus_set()
+        figuras_ordenadas = sorted(self.model.figuras_selecionadas, 
+                                   key=lambda f: self.model.figuras.index(f))
+        for figura in figuras_ordenadas:
             self.model.figuras.remove(figura)
             self.model.figuras.append(figura)
-            for id_item in figura.obter_ids_canvas():
-                canvas.tag_raise(id_item)
+        self.model.figuras_selecionadas.sort(key=lambda f: self.model.figuras.index(f))
+        self.sincronizar_idx(canvas)
 
     def mover_fundo(self, event=None):
         canvas = self.view.canvas
-        for figura in reversed(self.model.figuras_selecionadas):
+        if not self.model.figuras_selecionadas:
+            return
+        canvas.focus_set()
+        figuras_ordenadas = sorted(self.model.figuras_selecionadas, 
+                                   key=lambda f: self.model.figuras.index(f),
+                                   reverse=True)
+
+        for figura in figuras_ordenadas:
             self.model.figuras.remove(figura)
             self.model.figuras.insert(0, figura)
-            for id_item in reversed(figura.obter_ids_canvas()):
-                canvas.tag_lower(id_item)
+        self.model.figuras_selecionadas.sort(key=lambda f: self.model.figuras.index(f))
+            
+        self.sincronizar_idx(canvas)
+
+    def sincronizar_idx(self, canvas):
+        for fig in self.model.figuras:
+            for id_item in fig.obter_ids_canvas():
+                canvas.tag_raise(id_item)
 
     def copiar_figura(self, event=None):
         self.model.copiar_figura()
@@ -162,13 +206,33 @@ class Controller:
         if self.model.figura_copiada:
             self.model.colar_figura(self.view.canvas)
 
+    def undo(self, event=None):
+        canvas = self.view.canvas
+        if self.model.undo():
+            canvas.delete("all")
+            self.model.redesenhar_tudo(canvas)
+            canvas.focus_set()
+            self.sincronizar_idx(canvas)
+
+    def redo(self, event=None):
+        canvas = self.view.canvas
+        if self.model.redo():
+            canvas.delete("all")
+            self.model.redesenhar_tudo(canvas)
+            canvas.focus_set()
+            self.sincronizar_idx(canvas)
+
     def ao_mudar_cor_fill(self, *args):
-        for figura in self.model.figuras_selecionadas:
-            figura.mudar_cor_fill(self.view.canvas, self.cor_fill.get())
+        if self.model.figuras_selecionadas:
+            self.model.salvar_estado()
+            for figura in self.model.figuras_selecionadas:
+                figura.mudar_cor_fill(self.view.canvas, self.cor_fill.get())
 
     def ao_mudar_cor_out(self, *args):
-        for figura in self.model.figuras_selecionadas:
-            figura.mudar_cor_out(self.view.canvas, self.cor_out.get())
+        if self.model.figuras_selecionadas:
+            self.model.salvar_estado()
+            for figura in self.model.figuras_selecionadas:
+                figura.mudar_cor_out(self.view.canvas, self.cor_out.get())
 
     def definir_transparente(self):
         self.cor_fill.set("")

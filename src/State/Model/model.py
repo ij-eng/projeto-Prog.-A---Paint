@@ -10,7 +10,75 @@ class Model:
         self.figura_selecionada = None
         self.figura_copiada = []
         self.figuras_selecionadas = []
+        self.undo_pilha = []
+        self.redo_pilha = []
 
+    def salvar_estado(self):
+        self.redo_pilha.clear()
+        # Clona cada figura individualmente para guardar as coordenadas antigas exatas
+        figuras_clonadas = [fig.clonar() for fig in self.figuras]
+        
+        # Mapeia as selecionadas para as novas instâncias clonadas
+        selecionadas_clonadas = []
+        for fig in self.figuras_selecionadas:
+            if fig in self.figuras:
+                idx = self.figuras.index(fig)
+                selecionadas_clonadas.append(figuras_clonadas[idx])
+
+        estado_atual = {
+            'figuras': figuras_clonadas,
+            'selecionadas': selecionadas_clonadas
+        }
+        self.undo_pilha.append(estado_atual)
+
+    def undo(self):
+        if not self.undo_pilha:
+            return False
+
+        # Guarda o estado atual no Redo antes de voltar (também clonando)
+        figuras_clonadas = [fig.clonar() for fig in self.figuras]
+        selecionadas_clonadas = []
+        for fig in self.figuras_selecionadas:
+            if fig in self.figuras:
+                idx = self.figuras.index(fig)
+                selecionadas_clonadas.append(figuras_clonadas[idx])
+
+        estado_atual = {
+            'figuras': figuras_clonadas,
+            'selecionadas': selecionadas_clonadas
+        }
+        self.redo_pilha.append(estado_atual)
+
+        # Restaura o estado anterior
+        ultimo_estado = self.undo_pilha.pop()
+        self.figuras = ultimo_estado['figuras']
+        self.figuras_selecionadas = ultimo_estado['selecionadas']
+        return True
+    
+    def redo(self):
+        if not self.redo_pilha:
+            return False
+            
+        # Guarda o estado atual no Undo (também clonando)
+        figuras_clonadas = [fig.clonar() for fig in self.figuras]
+        selecionadas_clonadas = []
+        for fig in self.figuras_selecionadas:
+            if fig in self.figuras:
+                idx = self.figuras.index(fig)
+                selecionadas_clonadas.append(figuras_clonadas[idx])
+
+        estado_atual = {
+            'figuras': figuras_clonadas,
+            'selecionadas': selecionadas_clonadas
+        }
+        self.undo_pilha.append(estado_atual)
+
+        # Restaura o próximo estado tirando da redo_pilha
+        proximo_estado = self.redo_pilha.pop()
+        self.figuras = proximo_estado['figuras']
+        self.figuras_selecionadas = proximo_estado['selecionadas']
+        return True
+    
     def deletar_provisorio(self, canvas):
         if self.id_provisorio:
             canvas.delete(self.id_provisorio)
@@ -22,6 +90,7 @@ class Model:
         self.id_provisorio = figura.desenhar_provisorio(canvas)
 
     def desenhar_definitivo(self, canvas, classe_forma, valores, cor_fill, cor_out):
+        self.salvar_estado()
         figura = classe_forma(valores, cor_fill, cor_out)
         figura.id_canvas = figura.desenhar(canvas)
         self.figuras.append(figura)
