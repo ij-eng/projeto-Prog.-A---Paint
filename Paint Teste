@@ -1,0 +1,185 @@
+from math import sqrt
+from tkinter import *
+from tkinter.ttk import *
+from tkinter import colorchooser
+
+
+class FormasModelo:
+    def __init__(self, valores, cor_fill, cor_out):
+        self.valores = valores
+        self.cor_fill = cor_fill if cor_fill != "" else ""
+        self.cor_out = cor_out
+
+    def desenhar(self, canvas): pass
+    def desenhar_provisorio(self, canvas): 
+        return self.desenhar(canvas)
+
+
+class Linha(FormasModelo):
+    def desenhar(self, canvas):
+        if len(self.valores) >= 4:
+            return canvas.create_line(self.valores[0], self.valores[1], self.valores[2], self.valores[3], fill=self.cor_out)
+
+class Rabisco(FormasModelo):
+    def desenhar(self, canvas):
+        if len(self.valores) > 1:
+            return canvas.create_line(self.valores, fill=self.cor_out)
+
+class Retangulo(FormasModelo):
+    def desenhar(self, canvas):
+        if len(self.valores) >= 4:
+            return canvas.create_rectangle(self.valores[0], self.valores[1], self.valores[2], self.valores[3], fill=self.cor_fill, outline=self.cor_out)
+
+class Oval(FormasModelo):
+    def desenhar(self, canvas):
+        if len(self.valores) >= 4:
+            return canvas.create_oval(self.valores[0], self.valores[1], self.valores[2], self.valores[3], fill=self.cor_fill, outline=self.cor_out)
+
+class Circulo(FormasModelo):
+    def desenhar(self, canvas):
+        if len(self.valores) >= 4:
+            x1, y1, x2, y2 = self.valores[:4]
+            raio = sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
+            return canvas.create_oval(x1 - raio, y1 - raio, x1 + raio, y1 + raio, fill=self.cor_fill, outline=self.cor_out)
+
+class Poligono(FormasModelo):
+    def desenhar(self, canvas):
+        if len(self.valores) >= 6:
+            return canvas.create_polygon(self.valores, fill=self.cor_fill, outline=self.cor_out)
+    def desenhar_provisorio(self, canvas):
+        if len(self.valores) >= 4:
+            return canvas.create_line(self.valores, fill=self.cor_out)
+
+
+class Model:
+    def __init__(self):
+        self.figuras = []
+        self.valores_atual = []
+        self.forma_em_andamento = False
+        self.id_provisorio = None
+
+    def deletar_provisorio(self, canvas):
+        if self.id_provisorio:
+            canvas.delete(self.id_provisorio)
+            self.id_provisorio = None
+
+    def criar_figura(self, tipo, valores, cor_fill, cor_out):
+        if tipo == "Linha":
+            return Linha(valores, cor_fill, cor_out)
+        elif tipo == "Rabisco":
+            return Rabisco(valores, cor_fill, cor_out)
+        elif tipo == "Retangulo":
+            return Retangulo(valores, cor_fill, cor_out)
+        elif tipo == "Oval":
+            return Oval(valores, cor_fill, cor_out)
+        elif tipo == "Circulo":
+            return Circulo(valores, cor_fill, cor_out)
+        elif tipo == "Poligono":
+            return Poligono(valores, cor_fill, cor_out)
+
+    def desenhar_definitivo(self, canvas, tipo, valores, cor_fill, cor_out):
+        figura = self.criar_figura(tipo, valores, cor_fill, cor_out)
+        if figura: figura.desenhar(canvas)
+
+    def desenhar_provisorio(self, canvas, tipo, valores, cor_fill, cor_out):
+        self.deletar_provisorio(canvas)
+        figura = self.criar_figura(tipo, valores, cor_fill, cor_out)
+        if figura: self.id_provisorio = figura.desenhar_provisorio(canvas)
+
+
+class View:
+    def __init__(self, root, controller):
+        self.root = root
+        self.controller = controller
+        root.title("Padrão MVC (Money Vem Cedo)")
+
+        self.cor_fill_var, self.cor_out_var, self.tipo_figura_var = StringVar(value=""), StringVar(value="black"), StringVar(value="Rabisco")
+        
+        toolbar = Frame(root, padding=5)
+        toolbar.pack(side=TOP, fill=X)
+        
+        Label(toolbar, text="Forma: ").pack(side=LEFT, padx=5)
+        OptionMenu(toolbar, self.tipo_figura_var, "Rabisco", "Linha", "Retangulo", "Oval", "Circulo", "Poligono").pack(side=LEFT, padx=5)
+        Button(toolbar, text="Cor Borda", command=self.escolher_cor(self.cor_out_var)).pack(side=LEFT, padx=5)
+        Button(toolbar, text="Cor preenchimento", command=self.escolher_cor(self.cor_fill_var)).pack(side=LEFT, padx=5)
+        Button(toolbar, text="Tornar Transparente", command= self.cor_fill_var.set("")).pack(side=LEFT, padx=5)
+
+        self.canvas = Canvas(root, bg="white", width=1200, height=700)
+        self.canvas.pack(side=TOP, fill=BOTH, expand=True)
+        self.configurar_eventos()
+
+    def escolher_cor(self, var):
+        cor = colorchooser.askcolor()
+        if cor[1]: 
+            var.set(cor[1])
+
+    def configurar_eventos(self):
+        c = self.canvas
+        c.bind("<Button-1>", self.controller.ao_clicar)
+        c.bind("<B1-Motion>", self.controller.ao_arrastar)
+        c.bind("<ButtonRelease-1>", self.controller.ao_soltar)
+        c.bind("<Motion>", self.controller.ao_mover)
+        self.tipo_figura_var.trace_add("write", c.bind("<Double-Button-1>", self.controller.ao_duplo_clique) if self.tipo_figura_var.get() == "Poligono" else c.unbind("<Double-Button-1>"))
+
+
+class Controller:
+    def __init__(self, root):
+        self.model = Model()
+        self.view = View(root, self)
+
+    def obter_dados(self):
+        return self.view.tipo_figura_var.get(), self.view.cor_fill_var.get(), self.view.cor_out_var.get()
+
+    def ao_clicar(self, event):
+        tipo, fill, out = self.obter_dados()
+        if tipo == "Poligono":
+            if not self.model.forma_em_andamento:
+                self.model.valores_atual, self.model.forma_em_andamento = [event.x, event.y], True
+            else:
+                dist = sqrt((event.x - self.model.valores_atual[0])**2 + (event.y - self.model.valores_atual[1])**2)
+                if dist < 10 and len(self.model.valores_atual) >= 6:
+                    self.finalizar_forma(tipo)
+                else:
+                    self.model.valores_atual.extend([event.x, event.y])
+        else:
+            self.model.deletar_provisorio(self.view.canvas)
+            self.model.valores_atual = [event.x, event.y] if tipo == "Rabisco" else [event.x, event.y, event.x, event.y]
+
+    def ao_arrastar(self, event):
+        tipo, fill, out = self.obter_dados()
+        if tipo == "Poligono" or not self.model.valores_atual: return
+        
+        self.model.valores_atual.extend([event.x, event.y]) if tipo == "Rabisco" else self.model.valores_atual.__setitem__(slice(2, 4), [event.x, event.y])
+        self.model.desenhar_provisorio(self.view.canvas, tipo, self.model.valores_atual, fill, out)
+
+    def ao_soltar(self, event):
+        tipo, fill, out = self.obter_dados()
+        if tipo == "Poligono" or not self.model.valores_atual: return
+        
+        self.ao_arrastar(event)
+        if len(self.model.valores_atual) >= 4 and (self.model.valores_atual[0] != self.model.valores_atual[2] or self.model.valores_atual[1] != self.model.valores_atual[3] or tipo == "Rabisco"):
+            self.finalizar_forma(tipo)
+        self.model.valores_atual = []
+
+    def ao_mover(self, event):
+        tipo, fill, out = self.obter_dados()
+        if tipo == "Poligono" and self.model.forma_em_andamento:
+            self.model.desenhar_provisorio(self.view.canvas, tipo, self.model.valores_atual + [event.x, event.y], fill, out)
+
+    def ao_duplo_clique(self, event):
+        if self.model.forma_em_andamento:
+            if len(self.model.valores_atual) >= 8: self.model.valores_atual = self.model.valores_atual[:-2]
+            self.finalizar_forma("Poligono")
+
+    def finalizar_forma(self, tipo):
+        tipo, fill, out = self.obter_dados()
+        self.model.deletar_provisorio(self.view.canvas)
+        self.model.figuras.append({"tipo": tipo, "valores": self.model.valores_atual.copy(), "cor_fill": fill, "cor_out": out})
+        self.model.desenhar_definitivo(self.view.canvas, tipo, self.model.valores_atual, fill, out)
+        self.model.valores_atual, self.model.forma_em_andamento = [], False
+
+
+
+root = Tk()
+Controller(root)
+root.mainloop()
