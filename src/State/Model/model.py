@@ -500,3 +500,21 @@ class FiguraComposta(FormasModelo):
             if d < menor_dist:
                 menor_dist = d
         return menor_dist
+    
+    def obter_limites(self):
+        
+        x_mins = []
+        y_mins = []
+        x_maxs = []
+        y_maxs = []
+        
+        for fig in self.figuras_componentes:
+            limites = fig.obter_limites()
+            if limites:
+                x_mins.append(limites[0])
+                y_mins.append(limites[1])
+                x_maxs.append(limites[2])
+                y_maxs.append(limites[3])
+        
+            
+        return min(x_mins), min(y_mins), max(x_maxs), max(y_maxs)
