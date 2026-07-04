@@ -177,6 +177,30 @@ class Controller:
         self.model.figuras.append({"tipo": tipo, "valores": self.model.valores_atual.copy(), "cor_fill": fill, "cor_out": out})
         self.model.desenhar_definitivo(self.view.canvas, tipo, self.model.valores_atual, fill, out)
         self.model.valores_atual, self.model.forma_em_andamento = [], False
+    def salvar_arquivo(self):
+        caminho_arquivo = filedialog.asksaveasfilename(
+            defaultextension=".txt",
+            filetypes=[
+                ("Arquivos de Texto", "*.txt"),
+                ("Todos os arquivos", "*.*"),
+            ],
+            title="Salvar Desenho",
+        )
+        if caminho_arquivo:
+            self.model.salvar_para_txt(caminho_arquivo)
+
+    def abrir_arquivo(self):
+        caminho_arquivo = filedialog.askopenfilename(
+            filetypes=[
+                ("Arquivos de Texto", "*.txt"),
+                ("Todos os arquivos", "*.*"),
+            ],
+            title="Abrir Desenho",
+        )
+        if caminho_arquivo:
+            self.model.carregar_de_txt(caminho_arquivo)
+            self.view.canvas.delete("all")
+            self.model.redesenhar_tudo(self.view.canvas)
 
 
 
