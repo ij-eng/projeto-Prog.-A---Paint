@@ -6,7 +6,7 @@ class View:
     def __init__(self, root, controller):
         self.root = root
         self.controller = controller
-        self.root.title("Filé Minion")
+        self.root.title("Padrão State")
 
         self.cor_fill_var = StringVar(self.root, value="")
         self.cor_out_var = StringVar(self.root, value="black")
