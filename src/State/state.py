@@ -1,4 +1,5 @@
 from math import sqrt
+from Model.model import Linha, Retangulo, Oval, Circulo, Rabisco, Poligono
 
 class ControlState:
     def __init__(self, controller):
@@ -22,9 +23,9 @@ class ControlState:
 
 
 class FormaState(ControlState):
-    def __init__(self, controller, tipo_forma):
+    def __init__(self, controller, classe_forma):
         super().__init__(controller)
-        self.tipo_forma = tipo_forma
+        self.classe_forma = classe_forma
 
     def ao_clicar(self, event):
         self.model.deletar_provisorio(self.view.canvas)
@@ -32,7 +33,7 @@ class FormaState(ControlState):
 
     def ao_arrastar(self, event):
         self.model.valores_atual.__setitem__(slice(2, 4), [event.x, event.y])
-        self.model.desenhar_provisorio(self.view.canvas, self.tipo_forma, self.model.valores_atual, self.cor_fill, self.cor_out)
+        self.model.desenhar_provisorio(self.view.canvas, self.classe_forma, self.model.valores_atual, self.cor_fill, self.cor_out)
 
     def ao_soltar(self, event):
         if not self.model.valores_atual: return
@@ -44,29 +45,29 @@ class FormaState(ControlState):
 
         if not incompleta:
             self.model.desenhar_definitivo(
-                self.view.canvas, self.tipo_forma, valores.copy(), self.cor_fill, self.cor_out
+                self.view.canvas, self.classe_forma, valores.copy(), self.cor_fill, self.cor_out
             )
         self.model.valores_atual = []
 
 
 class LinhaState(FormaState):
     def __init__(self, controller):
-        super().__init__(controller, "Linha")
+        super().__init__(controller, Linha)
 
 
 class RetanguloState(FormaState):
     def __init__(self, controller):
-        super().__init__(controller, "Retangulo")
+        super().__init__(controller, Retangulo)
 
 
 class OvalState(FormaState):
     def __init__(self, controller):
-        super().__init__(controller, "Oval")
+        super().__init__(controller, Oval)
 
 
 class CirculoState(FormaState):
     def __init__(self, controller):
-        super().__init__(controller, "Circulo")
+        super().__init__(controller, Circulo)
 
 
 class RabiscoState(ControlState):
@@ -77,7 +78,7 @@ class RabiscoState(ControlState):
     def ao_arrastar(self, event):
         if not self.model.valores_atual: return
         self.model.valores_atual.extend([event.x, event.y])
-        self.model.desenhar_provisorio(self.view.canvas, "Rabisco", self.model.valores_atual, self.cor_fill, self.cor_out)
+        self.model.desenhar_provisorio(self.view.canvas, Rabisco, self.model.valores_atual, self.cor_fill, self.cor_out)
 
     def ao_soltar(self, event):
         if not self.model.valores_atual: return
@@ -87,7 +88,7 @@ class RabiscoState(ControlState):
         valores = self.model.valores_atual
 
         if len(valores) > 2:
-            self.model.desenhar_definitivo( self.view.canvas, "Rabisco", valores.copy(), self.cor_fill, self.cor_out)
+            self.model.desenhar_definitivo( self.view.canvas, Rabisco, valores.copy(), self.cor_fill, self.cor_out)
         self.model.valores_atual = []
 
 
@@ -106,7 +107,7 @@ class PoligonoState(ControlState):
     def ao_mover(self, event):
         if self.model.forma_em_andamento:
             valores_temp = self.model.valores_atual + [event.x, event.y]
-            self.model.desenhar_provisorio(self.view.canvas, "Poligono", valores_temp, self.cor_fill, self.cor_out)
+            self.model.desenhar_provisorio(self.view.canvas, Poligono, valores_temp, self.cor_fill, self.cor_out)
 
     def ao_duplo_clique(self, event):
         if self.model.forma_em_andamento:
@@ -118,7 +119,7 @@ class PoligonoState(ControlState):
         self.model.deletar_provisorio(self.view.canvas)
         if len(self.model.valores_atual) >= 6:
             self.model.desenhar_definitivo(
-                self.view.canvas, "Poligono", self.model.valores_atual.copy(), self.cor_fill, self.cor_out
+                self.view.canvas, Poligono, self.model.valores_atual.copy(), self.cor_fill, self.cor_out
             )
         self.model.valores_atual = []
         self.model.forma_em_andamento = False
