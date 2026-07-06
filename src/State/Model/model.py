@@ -27,14 +27,15 @@ class Model:
             return Poligono(valores, cor_fill, cor_out)
         return None
 
-    def desenhar_definitivo(self, canvas, tipo, valores, cor_fill, cor_out):
-        figura = self.criar_figura(tipo, valores, cor_fill, cor_out)
-        if figura: figura.desenhar(canvas), self.figuras.append(figura)
+    def desenhar_definitivo(self, canvas, classe_forma, valores, cor_fill, cor_out):
+        figura = classe_forma(valores, cor_fill, cor_out)
+        figura.desenhar(canvas)
+        self.figuras.append(figura)
 
-    def desenhar_provisorio(self, canvas, tipo, valores, cor_fill, cor_out):
+    def desenhar_provisorio(self, canvas, classe_forma, valores, cor_fill, cor_out):
         self.deletar_provisorio(canvas)
-        figura = self.criar_figura(tipo, valores, cor_fill, cor_out)
-        if figura: self.id_provisorio = figura.desenhar_provisorio(canvas)
+        figura = classe_forma(valores, cor_fill, cor_out)
+        self.id_provisorio = figura.desenhar_provisorio(canvas)
 
     def salvar_para_txt(self, caminho):
         with open(caminho, 'w') as f:
