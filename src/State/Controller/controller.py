@@ -2,7 +2,7 @@ from tkinter import colorchooser
 from View.view import *
 from Model.model import *
 from tkinter import filedialog
-from State.state import LinhaState, RetanguloState, OvalState, CirculoState, RabiscoState, PoligonoState
+from state import LinhaState, RetanguloState, OvalState, CirculoState, RabiscoState, PoligonoState
 
 class Controller:
     def __init__(self, root):
@@ -47,12 +47,13 @@ class Controller:
             self.model.deletar_provisorio(self.view.canvas)
             self.model.valores_atual = []
 
-       estados = {"Linha": LinhaState(self),
+        estados = {"Linha": LinhaState(self),
                    "Retangulo": RetanguloState(self),
                    "Oval": OvalState(self),
                    "Circulo": CirculoState(self),
                    "Rabisco": RabiscoState(self),
                    "Poligono": PoligonoState(self)}
+        
         self.estado_atual = estados[self.tipo_figura_var.get()]
 
 

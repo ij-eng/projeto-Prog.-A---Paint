@@ -12,21 +12,6 @@ class Model:
             canvas.delete(self.id_provisorio)
             self.id_provisorio = None
 
-    def criar_figura(self, tipo, valores, cor_fill, cor_out):
-        if tipo == "Linha":
-            return Linha(valores, cor_fill, cor_out)
-        elif tipo == "Rabisco":
-            return Rabisco(valores, cor_fill, cor_out)
-        elif tipo == "Retangulo":
-            return Retangulo(valores, cor_fill, cor_out)
-        elif tipo == "Oval":
-            return Oval(valores, cor_fill, cor_out)
-        elif tipo == "Circulo":
-            return Circulo(valores, cor_fill, cor_out)
-        elif tipo == "Poligono":
-            return Poligono(valores, cor_fill, cor_out)
-        return None
-
     def desenhar_definitivo(self, canvas, classe_forma, valores, cor_fill, cor_out):
         figura = classe_forma(valores, cor_fill, cor_out)
         figura.desenhar(canvas)
@@ -53,8 +38,10 @@ class Model:
                 tipo, valores_str, cor_fill, cor_out = linha.split('|')
                 valores = [float(x) if '.' in x else int(x) for x in valores_str.split(',')]
 
-                figura = self.criar_figura(tipo, valores, cor_fill, cor_out)
-                if figura:
+                classe_forma = globals().get(tipo)
+
+                if classe_forma and issubclass(classe_forma, FormasModelo):
+                    figura = classe_forma(valores, cor_fill, cor_out)
                     self.figuras.append(figura)
 
     def redesenhar_tudo(self, canvas):
