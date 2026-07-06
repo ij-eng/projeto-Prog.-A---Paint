@@ -47,20 +47,14 @@ class Controller:
             self.model.deletar_provisorio(self.view.canvas)
             self.model.valores_atual = []
 
-        tipo = self.tipo_figura_var.get()
+       estados = {"Linha": LinhaState(self),
+                   "Retangulo": RetanguloState(self),
+                   "Oval": OvalState(self),
+                   "Circulo": CirculoState(self),
+                   "Rabisco": RabiscoState(self),
+                   "Poligono": PoligonoState(self)}
+        self.estado_atual = estados[self.tipo_figura_var.get()]
 
-        if tipo == "Linha":
-            self.estado_atual = LinhaState(self)
-        elif tipo == "Retangulo":
-            self.estado_atual = RetanguloState(self)
-        elif tipo == "Oval":
-            self.estado_atual = OvalState(self)
-        elif tipo == "Circulo":
-            self.estado_atual = CirculoState(self)
-        elif tipo == "Poligono":
-            self.estado_atual = PoligonoState(self)
-        else:
-            self.estado_atual = RabiscoState(self)
 
     def escolher_cor_out(self):
         cor = colorchooser.askcolor(title="Escolha a cor da borda")
