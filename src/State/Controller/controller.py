@@ -2,7 +2,7 @@ from tkinter import colorchooser
 from View.view import *
 from Model.model import *
 from tkinter import filedialog
-from state import LinhaState, RetanguloState, OvalState, CirculoState, RabiscoState, PoligonoState
+from Controller.state import LinhaState, RetanguloState, OvalState, CirculoState, RabiscoState, PoligonoState
 
 class Controller:
     def __init__(self, root):
