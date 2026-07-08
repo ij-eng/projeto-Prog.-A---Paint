@@ -54,7 +54,7 @@ class Model:
 
     def redesenhar_tudo(self, canvas):
         for figura in self.figuras:
-            figura.desenhar(canvas)
+            figura.id_canvas = figura.desenhar(canvas)
 
 class FormasModelo:
     def __init__(self, valores, cor_fill, cor_out):
