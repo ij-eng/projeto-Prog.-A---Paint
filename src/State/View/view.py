@@ -22,7 +22,7 @@ class View:
         Label(toolbar, text="Forma: ").pack(side=LEFT, padx=5)
 
         seletor = OptionMenu(toolbar, self.tipo_figura_var, "Rabisco", "Rabisco", "Linha", "Retangulo", "Oval",
-                             "Circulo", "Poligono")
+                             "Circulo", "Poligono", "Selecionar")
         seletor.pack(side=LEFT, padx=5)
 
         btn_cor_out = Button(toolbar, text="Cor da Linha/Borda", command=self.controller.escolher_cor_out)
