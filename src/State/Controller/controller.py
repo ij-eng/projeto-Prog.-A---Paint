@@ -2,7 +2,7 @@ from tkinter import colorchooser
 from View.view import *
 from Model.model import *
 from tkinter import filedialog
-from .state import LinhaState, RetanguloState, OvalState, CirculoState, RabiscoState, PoligonoState
+from .state import LinhaState, RetanguloState, OvalState, CirculoState, RabiscoState, PoligonoState, SelecaoState
 
 class Controller:
     def __init__(self, root):
@@ -16,8 +16,13 @@ class Controller:
         self.estado_atual = RabiscoState(self)
         self.tipo_figura_var.trace_add("write", self.mudar_estado)
 
-        root.bind("<Up>", self.mover_para_frente) 
-        root.bind("<Down>",self.mover_para_tras)
+        root.bind("<Right>", self.mover_posicao_frente)
+        root.bind("<Left>", self.mover_posicao_tras)
+        root.bind("<Up>", self.mover_topo)
+        root.bind("<Down>", self.mover_fundo)
+
+        root.bind("<Delete>", self.deletar_figura)
+        root.bind("<BackSpace>", self.deletar_figura)
 
     def salvar_arquivo(self):
         caminho_arquivo = filedialog.asksaveasfilename(
@@ -56,9 +61,17 @@ class Controller:
                    "Circulo": CirculoState(self),
                    "Rabisco": RabiscoState(self),
                    "Poligono": PoligonoState(self),
-                   "Selecionar/Mover": SelecaoState(self)}
+                   "Selecionar": SelecaoState(self)}
         
         self.estado_atual = estados[self.tipo_figura_var.get()]
+
+    def deletar_figura(self, event=None):
+        if self.model.figura_selecionada:
+            id_canvas = self.model.figura_selecionada.id_canvas
+            self.view.canvas.delete(id_canvas)
+            if self.model.figura_selecionada in self.model.figuras:
+                self.model.figuras.remove(self.model.figura_selecionada)
+            self.model.figura_selecionada = None
 
 
     def escolher_cor_out(self):
@@ -70,20 +83,38 @@ class Controller:
         cor = colorchooser.askcolor(title="Escolha a cor do preenchimento")
         if cor[1]:
             self.cor_fill.set(cor[1])
-            
-    def mover_para_frente(self, event=None): # <--- Adicionado event=None aqui
-        if self.model.figura_selecionada:
-            id_canvas = self.model.figura_selecionada.id_canvas
-            self.view.canvas.tag_raise(id_canvas)
-           
-            self.model.figuras.append(self.model.figura_selecionada)
 
-    def mover_para_tras(self, event=None):
-        if self.model.figura_selecionada:
-            id_canvas = self.model.figura_selecionada.id_canvas
-            self.view.canvas.tag_lower(id_canvas)
-            self.model.figuras.remove(self.model.figura_selecionada)
-            self.model.figuras.insert(0, self.model.figura_selecionada)
+    def mover_posicao_frente(self, event=None):
+        figura = self.model.figura_selecionada
+        if figura and figura in self.model.figuras:
+            idx = self.model.figuras.index(figura)
+            if idx < len(self.model.figuras) - 1:
+                figura_frente = self.model.figuras[idx + 1]
+                self.model.figuras[idx], self.model.figuras[idx + 1] = self.model.figuras[idx + 1], self.model.figuras[idx]
+                self.view.canvas.tag_raise(figura.id_canvas, figura_frente.id_canvas)
+
+    def mover_posicao_tras(self, event=None):
+        figura = self.model.figura_selecionada
+        if figura and figura in self.model.figuras:
+            idx = self.model.figuras.index(figura)
+            if idx > 0:
+                figura_tras = self.model.figuras[idx - 1]
+                self.model.figuras[idx], self.model.figuras[idx - 1] = self.model.figuras[idx - 1], self.model.figuras[idx]
+                self.view.canvas.tag_lower(figura.id_canvas, figura_tras.id_canvas)
+
+    def mover_topo(self, event=None):
+        figura = self.model.figura_selecionada
+        if figura and figura in self.model.figuras:
+            self.view.canvas.tag_raise(figura.id_canvas)
+            self.model.figuras.remove(figura)
+            self.model.figuras.append(figura)
+
+    def mover_fundo(self, event=None):
+        figura = self.model.figura_selecionada
+        if figura and figura in self.model.figuras:
+            self.view.canvas.tag_lower(figura.id_canvas)
+            self.model.figuras.remove(figura)
+            self.model.figuras.insert(0, figura)
 
     def definir_transparente(self):
         self.cor_fill.set("")
