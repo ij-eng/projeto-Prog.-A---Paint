@@ -2,7 +2,7 @@ from tkinter import colorchooser
 from View.view import *
 from Model.model import *
 from tkinter import filedialog
-from Controller.state import LinhaState, RetanguloState, OvalState, CirculoState, RabiscoState, PoligonoState
+from .state import LinhaState, RetanguloState, OvalState, CirculoState, RabiscoState, PoligonoState
 
 class Controller:
     def __init__(self, root):
@@ -15,6 +15,9 @@ class Controller:
 
         self.estado_atual = RabiscoState(self)
         self.tipo_figura_var.trace_add("write", self.mudar_estado)
+
+        root.bind("<Up>", self.mover_para_frente) 
+        root.bind("<Down>",self.mover_para_tras)
 
     def salvar_arquivo(self):
         caminho_arquivo = filedialog.asksaveasfilename(
@@ -52,7 +55,8 @@ class Controller:
                    "Oval": OvalState(self),
                    "Circulo": CirculoState(self),
                    "Rabisco": RabiscoState(self),
-                   "Poligono": PoligonoState(self)}
+                   "Poligono": PoligonoState(self),
+                   "Selecionar/Mover": SelecaoState(self)}
         
         self.estado_atual = estados[self.tipo_figura_var.get()]
 
@@ -66,6 +70,20 @@ class Controller:
         cor = colorchooser.askcolor(title="Escolha a cor do preenchimento")
         if cor[1]:
             self.cor_fill.set(cor[1])
+            
+    def mover_para_frente(self, event=None): # <--- Adicionado event=None aqui
+        if self.model.figura_selecionada:
+            id_canvas = self.model.figura_selecionada.id_canvas
+            self.view.canvas.tag_raise(id_canvas)
+           
+            self.model.figuras.append(self.model.figura_selecionada)
+
+    def mover_para_tras(self, event=None):
+        if self.model.figura_selecionada:
+            id_canvas = self.model.figura_selecionada.id_canvas
+            self.view.canvas.tag_lower(id_canvas)
+            self.model.figuras.remove(self.model.figura_selecionada)
+            self.model.figuras.insert(0, self.model.figura_selecionada)
 
     def definir_transparente(self):
         self.cor_fill.set("")
