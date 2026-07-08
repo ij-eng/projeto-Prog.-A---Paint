@@ -21,6 +21,7 @@ class ControlState:
     def ao_mover(self, event): pass
     def ao_duplo_clique(self, event): pass
 
+
 class SelecaoState(ControlState):
     def __init__(self, controller):
         super().__init__(controller)
@@ -29,37 +30,42 @@ class SelecaoState(ControlState):
 
     def ao_clicar(self, event):
         itens_clicados = self.view.canvas.find_withtag("current")
+
         if itens_clicados:
             id_clicado = itens_clicados[0]
             figura = self.model.obter_figura_por_id(id_clicado)
+
             if figura:
-                if self.model.figura_selecionada :
-                    self.view.canvas.itemconfig(self.model.figura_selecionada.id_canvas, width=2)
-                
+                if self.model.figura_selecionada and self.model.figura_selecionada != figura:
+                    self.view.canvas.itemconfig(self.model.figura_selecionada.id_canvas, width=1)
+
                 self.model.figura_selecionada = figura
                 self.x_anterior = event.x
                 self.y_anterior = event.y
-                self.view.canvas.itemconfig(id_clicado, width=4)
-        else:
-            if self.model.figura_selecionada:
-                self.view.canvas.itemconfig(self.model.figura_selecionada.id_canvas, width=2)
+                self.view.canvas.itemconfig(figura.id_canvas, width=3)
+                return
+
+        if self.model.figura_selecionada:
+            self.view.canvas.itemconfig(self.model.figura_selecionada.id_canvas, width=1)
             self.model.figura_selecionada = None
-            
+
     def ao_arrastar(self, event):
-        figura = self.model.figura_selecionada
-        if figura:
+        if self.model.figura_selecionada:
             dx = event.x - self.x_anterior
             dy = event.y - self.y_anterior
-            
-            self.view.canvas.move(figura.id_canvas, dx, dy)
-            figura.mover(dx, dy)
-            
+
+            id_canvas = self.model.figura_selecionada.id_canvas
+            self.view.canvas.move(id_canvas, dx, dy)
+
+            for i in range(0, len(self.model.figura_selecionada.valores), 2):
+                self.model.figura_selecionada.valores[i] += dx
+                self.model.figura_selecionada.valores[i + 1] += dy
+
             self.x_anterior = event.x
             self.y_anterior = event.y
 
     def ao_soltar(self, event):
-        if self.model.figura_selecionada:
-            self.view.canvas.itemconfig(self.model.figura_selecionada.id_canvas, width=2)
+        pass
 
 class FormaState(ControlState):
     def __init__(self, controller, classe_forma):
@@ -83,9 +89,7 @@ class FormaState(ControlState):
         incompleta = len(valores) < 4 or (valores[0] == valores[2] and valores[1] == valores[3])
 
         if not incompleta:
-            self.model.desenhar_definitivo(
-                self.view.canvas, self.classe_forma, valores.copy(), self.cor_fill, self.cor_out
-            )
+            self.model.desenhar_definitivo(self.view.canvas, self.classe_forma, valores.copy(), self.cor_fill, self.cor_out)
         self.model.valores_atual = []
 
 
@@ -157,8 +161,6 @@ class PoligonoState(ControlState):
     def finalizar_forma(self):
         self.model.deletar_provisorio(self.view.canvas)
         if len(self.model.valores_atual) >= 6:
-            self.model.desenhar_definitivo(
-                self.view.canvas, Poligono, self.model.valores_atual.copy(), self.cor_fill, self.cor_out
-            )
+            self.model.desenhar_definitivo(self.view.canvas, Poligono, self.model.valores_atual.copy(), self.cor_fill, self.cor_out)
         self.model.valores_atual = []
         self.model.forma_em_andamento = False
