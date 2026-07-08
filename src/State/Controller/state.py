@@ -21,6 +21,45 @@ class ControlState:
     def ao_mover(self, event): pass
     def ao_duplo_clique(self, event): pass
 
+class SelecaoState(ControlState):
+    def __init__(self, controller):
+        super().__init__(controller)
+        self.x_anterior = 0
+        self.y_anterior = 0
+
+    def ao_clicar(self, event):
+        itens_clicados = self.view.canvas.find_withtag("current")
+        if itens_clicados:
+            id_clicado = itens_clicados[0]
+            figura = self.model.obter_figura_por_id(id_clicado)
+            if figura:
+                if self.model.figura_selecionada :
+                    self.view.canvas.itemconfig(self.model.figura_selecionada.id_canvas, width=2)
+                
+                self.model.figura_selecionada = figura
+                self.x_anterior = event.x
+                self.y_anterior = event.y
+                self.view.canvas.itemconfig(id_clicado, width=4)
+        else:
+            if self.model.figura_selecionada:
+                self.view.canvas.itemconfig(self.model.figura_selecionada.id_canvas, width=2)
+            self.model.figura_selecionada = None
+            
+    def ao_arrastar(self, event):
+        figura = self.model.figura_selecionada
+        if figura:
+            dx = event.x - self.x_anterior
+            dy = event.y - self.y_anterior
+            
+            self.view.canvas.move(figura.id_canvas, dx, dy)
+            figura.mover(dx, dy)
+            
+            self.x_anterior = event.x
+            self.y_anterior = event.y
+
+    def ao_soltar(self, event):
+        if self.model.figura_selecionada:
+            self.view.canvas.itemconfig(self.model.figura_selecionada.id_canvas, width=2)
 
 class FormaState(ControlState):
     def __init__(self, controller, classe_forma):
