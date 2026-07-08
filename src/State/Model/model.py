@@ -6,6 +6,7 @@ class Model:
         self.valores_atual = []
         self.forma_em_andamento = False
         self.id_provisorio = None
+        self.figura_selecionada = None
 
     def deletar_provisorio(self, canvas):
         if self.id_provisorio:
@@ -14,13 +15,20 @@ class Model:
 
     def desenhar_definitivo(self, canvas, classe_forma, valores, cor_fill, cor_out):
         figura = classe_forma(valores, cor_fill, cor_out)
-        figura.desenhar(canvas)
+        figura.id_canvas = figura.desenhar(canvas)
         self.figuras.append(figura)
-
+        
     def desenhar_provisorio(self, canvas, classe_forma, valores, cor_fill, cor_out):
         self.deletar_provisorio(canvas)
         figura = classe_forma(valores, cor_fill, cor_out)
         self.id_provisorio = figura.desenhar_provisorio(canvas)
+        
+    #Procura na lista a figura selecionada
+    def obter_figura_por_id(self, id_canvas):
+        for figura in self.figuras:
+            if figura.id_canvas == id_canvas:
+                return figura
+        return None
 
     def salvar_para_txt(self, caminho):
         with open(caminho, 'w') as f:
@@ -58,6 +66,13 @@ class FormasModelo:
 
     def desenhar_provisorio(self, canvas):
         return self.desenhar(canvas)
+    #Procura na lista de valores as cordenadas e acrescenta o deslocamento
+    def mover(self, dx, dy):
+        for i in range(len(self.valores)):
+            if i % 2 == 0:
+                self.valores[i] += dx
+            else:
+                self.valores[i] += dy
 
 
 class Linha(FormasModelo):
