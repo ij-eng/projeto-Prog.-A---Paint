@@ -7,6 +7,7 @@ class Model:
         self.forma_em_andamento = False
         self.id_provisorio = None
         self.figura_selecionada = None
+        self.figura_copiada = None
 
     def deletar_provisorio(self, canvas):
         if self.id_provisorio:
@@ -56,11 +57,26 @@ class Model:
         for figura in self.figuras:
             figura.id_canvas = figura.desenhar(canvas)
 
+    def copiar_figura(self, figura):
+        self.figura_copiada = type(figura)(figura.valores.copy(), figura.cor_fill, figura.cor_out)
+
+    def colar_figura(self, canvas):
+        if self.figura_copiada:
+            self.figura_copiada.mover(10, 10)
+
+            nova_figura = type(self.figura_copiada)(self.figura_copiada.valores.copy(),
+                                                    self.figura_copiada.cor_fill,
+                                                    self.figura_copiada.cor_out)
+
+            nova_figura.id_canvas = nova_figura.desenhar(canvas)
+            self.figuras.append(nova_figura)
+
 class FormasModelo:
     def __init__(self, valores, cor_fill, cor_out):
         self.valores = valores
         self.cor_fill = cor_fill
         self.cor_out = cor_out
+        self.id_canvas = None
 
     def desenhar(self, canvas): pass
 
@@ -74,17 +90,37 @@ class FormasModelo:
             else:
                 self.valores[i] += dy
 
+    def mudar_cor_fill(self, canvas, cor):
+        self.cor_fill = cor
+        canvas.itemconfig(self.id_canvas, fill=cor)
 
+    def mudar_cor_out(self, canvas, cor):
+        self.cor_out = cor
+        canvas.itemconfig(self.id_canvas, outline=cor)
 class Linha(FormasModelo):
     def desenhar(self, canvas):
         if len(self.valores) >= 4:
             return canvas.create_line(self.valores[0], self.valores[1], self.valores[2], self.valores[3],
                                       fill=self.cor_out)
 
+    def mudar_cor_fill(self, canvas, cor):
+        pass
+
+    def mudar_cor_out(self, canvas, cor):
+        self.cor_out = cor
+        canvas.itemconfig(self.id_canvas, fill=cor)
+
 class Rabisco(FormasModelo):
     def desenhar(self, canvas):
         if len(self.valores) > 1:
             return canvas.create_line(self.valores, fill=self.cor_out)
+
+    def mudar_cor_fill(self, canvas, cor):
+        pass
+
+    def mudar_cor_out(self, canvas, cor):
+        self.cor_out = cor
+        canvas.itemconfig(self.id_canvas, fill=cor)
 
 class Retangulo(FormasModelo):
     def desenhar(self, canvas):

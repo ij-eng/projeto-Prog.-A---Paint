@@ -16,6 +16,9 @@ class Controller:
         self.estado_atual = RabiscoState(self)
         self.tipo_figura_var.trace_add("write", self.mudar_estado)
 
+        self.cor_fill.trace_add("write", self.ao_mudar_cor_fill)
+        self.cor_out.trace_add("write", self.ao_mudar_cor_out)
+
         root.bind("<Right>", self.mover_posicao_frente)
         root.bind("<Left>", self.mover_posicao_tras)
         root.bind("<Up>", self.mover_topo)
@@ -23,6 +26,9 @@ class Controller:
 
         root.bind("<Delete>", self.deletar_figura)
         root.bind("<BackSpace>", self.deletar_figura)
+
+        root.bind("<Control-c>", self.copiar_figura)
+        root.bind("<Control-v>", self.colar_figura)
 
     def salvar_arquivo(self):
         caminho_arquivo = filedialog.asksaveasfilename(
@@ -54,6 +60,10 @@ class Controller:
             self.model.forma_em_andamento = False
             self.model.deletar_provisorio(self.view.canvas)
             self.model.valores_atual = []
+
+        if self.model.figura_selecionada:
+            self.view.canvas.itemconfig(self.model.figura_selecionada.id_canvas, width=1)
+            self.model.figura_selecionada = None
 
         estados = {"Linha": LinhaState(self),
                    "Retangulo": RetanguloState(self),
@@ -115,6 +125,22 @@ class Controller:
             self.view.canvas.tag_lower(figura.id_canvas)
             self.model.figuras.remove(figura)
             self.model.figuras.insert(0, figura)
+
+    def copiar_figura(self, event=None):
+        if self.model.figura_selecionada:
+            self.model.copiar_figura(self.model.figura_selecionada)
+
+    def colar_figura(self, event=None):
+        if self.model.figura_copiada:
+            self.model.colar_figura(self.view.canvas)
+
+    def ao_mudar_cor_fill(self, *args):
+        if self.model.figura_selecionada:
+            self.model.figura_selecionada.mudar_cor_fill(self.view.canvas, self.cor_fill.get())
+
+    def ao_mudar_cor_out(self, *args):
+        if self.model.figura_selecionada:
+            self.model.figura_selecionada.mudar_cor_out(self.view.canvas, self.cor_out.get())
 
     def definir_transparente(self):
         self.cor_fill.set("")
