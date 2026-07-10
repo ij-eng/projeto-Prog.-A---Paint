@@ -98,7 +98,7 @@ class Controller:
         figura = self.model.figura_selecionada
         if figura and figura in self.model.figuras:
             idx = self.model.figuras.index(figura)
-            if idx < len(self.model.figuras) - 1:
+            if idx < len(self.model.figuras) - 1: #move para frente se ela ja n for a mais para frente da lista
                 figura_frente = self.model.figuras[idx + 1]
                 self.model.figuras[idx], self.model.figuras[idx + 1] = self.model.figuras[idx + 1], self.model.figuras[
                     idx]
@@ -108,7 +108,7 @@ class Controller:
         figura = self.model.figura_selecionada
         if figura and figura in self.model.figuras:
             idx = self.model.figuras.index(figura)
-            if idx > 0:
+            if idx > 0: #move para tras se ela ja n for a mais atras
                 figura_tras = self.model.figuras[idx - 1]
                 self.model.figuras[idx], self.model.figuras[idx - 1] = self.model.figuras[idx - 1], self.model.figuras[
                     idx]

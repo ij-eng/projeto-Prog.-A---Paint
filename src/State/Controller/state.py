@@ -3,19 +3,20 @@ from Model.model import Linha, Retangulo, Oval, Circulo, Rabisco, Poligono
 
 
 class ControlState:
-    def __init__(self, controller):
+    def __init__(self, controller): #aqui serve p que o state consiga conversar com todo o resto
         self.controller = controller
         self.model = controller.model
         self.view = controller.view
 
     @property
     def cor_fill(self) -> str:
-        return self.controller.cor_fill.get()
+        return self.controller.cor_fill.get() #pega a cor do preenchimento que esta no momento na figura
 
     @property
     def cor_out(self) -> str:
-        return self.controller.cor_out.get()
+        return self.controller.cor_out.get() #faz o mesmo que a de cima, porem para a linha da figura
 
+    #aqui so para definir as funções que as funções do state utilizam
     def ao_clicar(self, event): pass
     def ao_arrastar(self, event): pass
     def ao_soltar(self, event): pass
@@ -25,7 +26,7 @@ class ControlState:
 
 class SelecaoState(ControlState):
     def __init__(self, controller):
-        super().__init__(controller)
+        super().__init__(controller) #vai guardar a ultima posição do mouse
         self.x_anterior = 0
         self.y_anterior = 0
 
@@ -76,7 +77,7 @@ class SelecaoState(ControlState):
         return dentro
 
     def distancia_figura(self, figura, px, py):
-        valores = figura.valores
+        valores = figura.valores #pega a lista de coordenadas das figuras
 
         if isinstance(figura, (Linha, Rabisco)):
             menor_dist = float('inf')
@@ -123,25 +124,18 @@ class SelecaoState(ControlState):
         tolerancia = 8
 
         figura_clicada = None
-        menor_distancia = float('inf')
 
         for figura in reversed(self.model.figuras):
-            if isinstance(figura, (Linha, Rabisco)):
-                dist = self.distancia_figura(figura, px, py)
-                if dist < tolerancia and dist < menor_distancia:
-                    menor_distancia = dist
-                    figura_clicada = figura
+            dist = self.distancia_figura(figura, px, py)
 
-        if not figura_clicada:
-            for figura in reversed(self.model.figuras):
-                if not isinstance(figura, (Linha, Rabisco)):
-                    dist = self.distancia_figura(figura, px, py)
-                    if dist == 0.0 or dist < tolerancia:
-                        if dist < menor_distancia:
-                            menor_distancia = dist
-                            figura_clicada = figura
-                        if dist == 0.0:
-                            break
+            if isinstance(figura, (Linha, Rabisco)):
+                if dist < tolerancia:
+                    figura_clicada = figura
+                    break
+            else:
+                if dist == 0.0 or dist < tolerancia:
+                    figura_clicada = figura
+                    break
 
         if figura_clicada:
             if self.model.figura_selecionada and self.model.figura_selecionada != figura_clicada:
@@ -199,7 +193,7 @@ class FormaState(ControlState):
             self.model.desenhar_definitivo(self.view.canvas, self.classe_forma, valores.copy(), self.cor_fill, self.cor_out)
         self.model.valores_atual = []
 
-
+#Do linhastate até o circulostate eles são casos bases, por isso são bestinhas asssim, so dizem para classe mãe qual criar e vivem desse jeito
 class LinhaState(FormaState):
     def __init__(self, controller):
         super().__init__(controller, Linha)
