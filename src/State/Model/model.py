@@ -73,6 +73,33 @@ class Model:
             nova_figura.id_canvas = nova_figura.desenhar(canvas)
             self.figuras.append(nova_figura) #coloca o clone na lista de figuras
 
+    def mover_frente(self, figura, canvas):
+        if figura in self.figuras:
+            idx = self.figuras.index(figura)
+            if idx < len(self.figuras) - 1:
+                figura_frente = self.figuras[idx + 1]
+                self.figuras[idx], self.figuras[idx + 1] = self.figuras[idx + 1], self.figuras[idx]
+                canvas.tag_raise(figura.id_canvas, figura_frente.id_canvas)
+
+    def mover_tras(self, figura, canvas):
+        if figura in self.figuras:
+            idx = self.figuras.index(figura)
+            if idx > 0:
+                figura_tras = self.figuras[idx - 1]
+                self.figuras[idx], self.figuras[idx - 1] = self.figuras[idx - 1], self.figuras[idx]
+                canvas.tag_lower(figura.id_canvas, figura_tras.id_canvas)
+
+    def mover_topo(self, figura, canvas):
+        if figura in self.figuras:
+            canvas.tag_raise(figura.id_canvas)
+            self.figuras.remove(figura)
+            self.figuras.append(figura)
+
+    def mover_fundo(self, figura, canvas):
+        if figura in self.figuras:
+            canvas.tag_lower(figura.id_canvas)
+            self.figuras.remove(figura)
+            self.figuras.insert(0, figura)
 
 class FormasModelo:
     def __init__(self, valores, cor_fill, cor_out):
@@ -81,11 +108,9 @@ class FormasModelo:
         self.cor_out = cor_out  #cor da borda
         self.id_canvas = None  #a identidade secreta da figura no canva
 
-    def desenhar(self, canvas):
-        pass
+    def desenhar(self, canvas): pass
 
-    def desenhar_provisorio(self, canvas):
-        return self.desenhar(canvas)
+    def desenhar_provisorio(self, canvas): return self.desenhar(canvas)
 
     #Procura na lista de valores as cordenadas e acrescenta o deslocamento
     def mover(self, dx, dy):
@@ -103,12 +128,31 @@ class FormasModelo:
         self.cor_out = cor
         canvas.itemconfig(self.id_canvas, outline=cor) #pinta a linha da figura
 
+    @staticmethod
+    def distancia_ponto(x1, y1, x2, y2, px, py):
+        dx = x2 - x1
+        dy = y2 - y1
+        ab_len_sq = dx ** 2 + dy ** 2
+
+        if ab_len_sq == 0:
+            return sqrt((px - x1) ** 2 + (py - y1) ** 2)
+
+        ap_x = px - x1
+        ap_y = py - y1
+        t = (ap_x * dx + ap_y * dy) / ab_len_sq
+        t = max(0.0, min(1.0, t))
+
+        ponto_proximo_x = x1 + t * dx
+        ponto_proximo_y = y1 + t * dy
+
+        return sqrt((px - ponto_proximo_x) ** 2 + (py - ponto_proximo_y) ** 2)
+
+    def distancia_figura(self, px, py): pass
 
 class Linha(FormasModelo):
     def desenhar(self, canvas):
         if len(self.valores) >= 4:
-            return canvas.create_line(self.valores[0], self.valores[1], self.valores[2], self.valores[3],
-                                      fill=self.cor_out)
+            return canvas.create_line(self.valores[0], self.valores[1], self.valores[2], self.valores[3], fill=self.cor_out)
 
     def mudar_cor_fill(self, canvas, cor):
         pass #a linha nao tem o preenchimento ent n faz nada
@@ -116,6 +160,15 @@ class Linha(FormasModelo):
     def mudar_cor_out(self, canvas, cor):
         self.cor_out = cor
         canvas.itemconfig(self.id_canvas, fill=cor)
+
+    def distancia_figura(self, px, py):
+        valores = self.valores
+        menor_dist = float('inf')
+        for i in range(0, len(valores) - 2, 2):
+            d = self.distancia_ponto(valores[i], valores[i + 1], valores[i + 2], valores[i + 3], px, py)
+            if d < menor_dist:
+                menor_dist = d
+        return menor_dist
 
 
 class Rabisco(FormasModelo):
@@ -130,6 +183,15 @@ class Rabisco(FormasModelo):
         self.cor_out = cor
         canvas.itemconfig(self.id_canvas, fill=cor)
 
+    def distancia_figura(self, px, py):
+        valores = self.valores
+        menor_dist = float('inf')
+        for i in range(0, len(valores) - 2, 2):
+            d = self.distancia_ponto(valores[i], valores[i + 1], valores[i + 2], valores[i + 3], px, py)
+            if d < menor_dist:
+                menor_dist = d
+        return menor_dist
+
 
 class Retangulo(FormasModelo):
     def desenhar(self, canvas):
@@ -137,12 +199,30 @@ class Retangulo(FormasModelo):
             return canvas.create_rectangle(self.valores[0], self.valores[1], self.valores[2], self.valores[3],
                                            fill=self.cor_fill, outline=self.cor_out) #cria retangulo
 
+    def distancia_figura(self, px, py):
+        valores = self.valores
+        if len(valores) >= 4:
+            x_min, x_max = min(valores[0], valores[2]), max(valores[0], valores[2])
+            y_min, y_max = min(valores[1], valores[3]), max(valores[1], valores[3])
+            if x_min <= px <= x_max and y_min <= py <= y_max:
+                return 0.0
+        return float("inf")
+
 
 class Oval(FormasModelo):
     def desenhar(self, canvas):
         if len(self.valores) >= 4:
             return canvas.create_oval(self.valores[0], self.valores[1], self.valores[2], self.valores[3],
                                       fill=self.cor_fill, outline=self.cor_out) #cria oval
+
+    def distancia_figura(self, px, py):
+        valores = self.valores
+        if len(valores) >= 4:
+            x_min, x_max = min(valores[0], valores[2]), max(valores[0], valores[2])
+            y_min, y_max = min(valores[1], valores[3]), max(valores[1], valores[3])
+            if x_min <= px <= x_max and y_min <= py <= y_max:
+                return 0.0
+        return float("inf")
 
 
 class Circulo(FormasModelo):
@@ -153,6 +233,16 @@ class Circulo(FormasModelo):
             return canvas.create_oval(x1 - raio, y1 - raio, x1 + raio, y1 + raio, fill=self.cor_fill,
                                       outline=self.cor_out) #cria o circulo, q é um oval com regras corretas
 
+    def distancia_figura(self, px, py):
+        valores = self.valores
+        if len(valores) >= 4:
+            x1, y1, x2, y2 = valores[:4]
+            raio = sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
+            dist_centro = sqrt((px - x1) ** 2 + (py - y1) ** 2)
+            if dist_centro <= raio:
+                return 0.0
+        return float("inf")
+
 
 class Poligono(FormasModelo):
     def desenhar(self, canvas):
@@ -162,3 +252,26 @@ class Poligono(FormasModelo):
     def desenhar_provisorio(self, canvas):
         if len(self.valores) >= 4:
             return canvas.create_line(self.valores, fill=self.cor_out) #o desenho provisorio são linhas
+
+    def distancia_figura(self, px, py):
+        valores = self.valores
+        pontos = [(valores[i], valores[i + 1]) for i in range(0, len(valores) - 1, 2)]
+        n = len(pontos)
+        if n < 3:
+            return False
+        dentro = False
+        p1x, p1y = pontos[0]
+        for i in range(n + 1):
+            p2x, p2y = pontos[i % n]
+            if py > min(p1y, p2y):
+                if py <= max(p1y, p2y):
+                    if px <= max(p1x, p2x):
+                        x_interceptado = px
+                        if p1y != p2y:
+                            x_interceptado = (py - p1y) * (p2x - p1x) / (p2y - p1y) + p1x
+                        if p1x == p2x or px <= x_interceptado:
+                            dentro = not dentro
+            p1x, p1y = p2x, p2y
+        if dentro:
+            return 0.0
+        return float("inf")

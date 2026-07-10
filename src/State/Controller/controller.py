@@ -66,7 +66,7 @@ class Controller:
             self.view.canvas.itemconfig(self.model.figura_selecionada.id_canvas, width=1)
             self.model.figura_selecionada = None
 
-        estados = {"Linha": LinhaState(self),
+        estados = {"Linha": LinhaState,
                    "Retangulo": RetanguloState(self),
                    "Oval": OvalState(self),
                    "Circulo": CirculoState(self),
@@ -95,38 +95,23 @@ class Controller:
             self.cor_fill.set(cor[1])
 
     def mover_posicao_frente(self, event=None):
-        figura = self.model.figura_selecionada
-        if figura and figura in self.model.figuras:
-            idx = self.model.figuras.index(figura)
-            if idx < len(self.model.figuras) - 1: #move para frente se ela ja n for a mais para frente da lista
-                figura_frente = self.model.figuras[idx + 1]
-                self.model.figuras[idx], self.model.figuras[idx + 1] = self.model.figuras[idx + 1], self.model.figuras[
-                    idx]
-                self.view.canvas.tag_raise(figura.id_canvas, figura_frente.id_canvas)
+        if self.model.figura_selecionada:
+            self.model.mover_frente(self.model.figura_selecionada, self.view.canvas)
+
 
     def mover_posicao_tras(self, event=None):
-        figura = self.model.figura_selecionada
-        if figura and figura in self.model.figuras:
-            idx = self.model.figuras.index(figura)
-            if idx > 0: #move para tras se ela ja n for a mais atras
-                figura_tras = self.model.figuras[idx - 1]
-                self.model.figuras[idx], self.model.figuras[idx - 1] = self.model.figuras[idx - 1], self.model.figuras[
-                    idx]
-                self.view.canvas.tag_lower(figura.id_canvas, figura_tras.id_canvas)
+        if self.model.figura_selecionada:
+            self.model.mover_tras(self.model.figura_selecionada, self.view.canvas)
+
 
     def mover_topo(self, event=None):
-        figura = self.model.figura_selecionada
-        if figura and figura in self.model.figuras:
-            self.view.canvas.tag_raise(figura.id_canvas)
-            self.model.figuras.remove(figura)
-            self.model.figuras.append(figura)
+        if self.model.figura_selecionada:
+            self.model.mover_topo(self.model.figura_selecionada, self.view.canvas)
+
 
     def mover_fundo(self, event=None):
-        figura = self.model.figura_selecionada
-        if figura and figura in self.model.figuras:
-            self.view.canvas.tag_lower(figura.id_canvas)
-            self.model.figuras.remove(figura)
-            self.model.figuras.insert(0, figura)
+        if self.model.figura_selecionada:
+            self.model.mover_fundo(self.model.figura_selecionada, self.view.canvas)
 
     def copiar_figura(self, event=None):
         if self.model.figura_selecionada:

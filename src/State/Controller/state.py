@@ -30,95 +30,6 @@ class SelecaoState(ControlState):
         self.x_anterior = 0
         self.y_anterior = 0
 
-    @staticmethod
-    def distancia_ponto(x1, y1, x2, y2, px, py):
-        dx = x2 - x1
-        dy = y2 - y1
-        ab_len_sq = dx ** 2 + dy ** 2
-
-        if ab_len_sq == 0:
-            return sqrt((px - x1) ** 2 + (py - y1) ** 2)
-
-        ap_x = px - x1
-        ap_y = py - y1
-        t = (ap_x * dx + ap_y * dy) / ab_len_sq
-        t = max(0.0, min(1.0, t))
-
-        ponto_proximo_x = x1 + t * dx
-        ponto_proximo_y = y1 + t * dy
-
-        return sqrt((px - ponto_proximo_x) ** 2 + (py - ponto_proximo_y) ** 2)
-
-    @staticmethod
-    def contem(valores, px, py):
-        pontos = [(valores[i], valores[i + 1]) for i in range(0, len(valores) - 1, 2)]
-        n = len(pontos)
-
-        if n < 3:
-            return False
-
-        dentro = False
-        p1x, p1y = pontos[0]
-
-        for i in range(n + 1):
-            p2x, p2y = pontos[i % n]
-
-            if py > min(p1y, p2y):
-                if py <= max(p1y, p2y):
-                    if px <= max(p1x, p2x):
-                        x_interceptado = px
-                        if p1y != p2y:
-                            x_interceptado = (py - p1y) * (p2x - p1x) / (p2y - p1y) + p1x
-                        if p1x == p2x or px <= x_interceptado:
-                            dentro = not dentro
-
-            p1x, p1y = p2x, p2y
-
-        return dentro
-
-    def distancia_figura(self, figura, px, py):
-        valores = figura.valores #pega a lista de coordenadas das figuras
-
-        if isinstance(figura, (Linha, Rabisco)):
-            menor_dist = float('inf')
-            for i in range(0, len(valores) - 2, 2):
-                d = self.distancia_ponto(valores[i], valores[i + 1], valores[i + 2], valores[i + 3], px, py)
-                if d < menor_dist:
-                    menor_dist = d
-            return menor_dist
-
-        elif isinstance(figura, Poligono):
-            if self.contem(valores, px, py):
-                return 0.0
-
-            menor_dist = float('inf')
-            for i in range(0, len(valores) - 2, 2):
-                d = self.distancia_ponto(valores[i], valores[i + 1], valores[i + 2], valores[i + 3], px, py)
-                if d < menor_dist:
-                    menor_dist = d
-            if len(valores) >= 6:
-                d = self.distancia_ponto(valores[-2], valores[-1], valores[0], valores[1], px, py)
-                if d < menor_dist:
-                    menor_dist = d
-            return menor_dist
-
-        elif isinstance(figura, (Retangulo, Oval)):
-            if len(valores) >= 4:
-                x_min, x_max = min(valores[0], valores[2]), max(valores[0], valores[2])
-                y_min, y_max = min(valores[1], valores[3]), max(valores[1], valores[3])
-                if x_min <= px <= x_max and y_min <= py <= y_max:
-                    return 0.0
-
-        elif isinstance(figura, Circulo):
-            if len(valores) >= 4:
-                x1, y1, x2, y2 = valores[:4]
-                raio = sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
-                dist_centro = sqrt((px - x1) ** 2 + (py - y1) ** 2)
-                if dist_centro <= raio:
-                    return 0.0
-
-        return float('inf')
-
     def ao_clicar(self, event):
         px, py = event.x, event.y
         tolerancia = 8
@@ -126,14 +37,14 @@ class SelecaoState(ControlState):
         figura_clicada = None
 
         for figura in reversed(self.model.figuras):
-            dist = self.distancia_figura(figura, px, py)
+            dist = figura.distancia_figura(px, py)
 
             if isinstance(figura, (Linha, Rabisco)):
                 if dist < tolerancia:
                     figura_clicada = figura
                     break
             else:
-                if dist == 0.0 or dist < tolerancia:
+                if dist == 0.0:
                     figura_clicada = figura
                     break
 
@@ -158,9 +69,7 @@ class SelecaoState(ControlState):
             id_canvas = self.model.figura_selecionada.id_canvas
             self.view.canvas.move(id_canvas, dx, dy)
 
-            for i in range(0, len(self.model.figura_selecionada.valores), 2):
-                self.model.figura_selecionada.valores[i] += dx
-                self.model.figura_selecionada.valores[i + 1] += dy
+            self.model.figura_selecionada.mover(dx, dy)
 
             self.x_anterior = event.x
             self.y_anterior = event.y
