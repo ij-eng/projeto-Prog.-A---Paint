@@ -4,6 +4,7 @@ from Model.model import *
 from tkinter import filedialog
 from .state import LinhaState, RetanguloState, OvalState, CirculoState, RabiscoState, PoligonoState, SelecaoState
 
+
 class Controller:
     def __init__(self, root):
         self.model = Model()
@@ -72,7 +73,7 @@ class Controller:
                    "Rabisco": RabiscoState(self),
                    "Poligono": PoligonoState(self),
                    "Selecionar": SelecaoState(self)}
-        
+
         self.estado_atual = estados[self.tipo_figura_var.get()]
 
     def deletar_figura(self, event=None):
@@ -82,7 +83,6 @@ class Controller:
             if self.model.figura_selecionada in self.model.figuras:
                 self.model.figuras.remove(self.model.figura_selecionada)
             self.model.figura_selecionada = None
-
 
     def escolher_cor_out(self):
         cor = colorchooser.askcolor(title="Escolha a cor da borda")
@@ -100,7 +100,8 @@ class Controller:
             idx = self.model.figuras.index(figura)
             if idx < len(self.model.figuras) - 1:
                 figura_frente = self.model.figuras[idx + 1]
-                self.model.figuras[idx], self.model.figuras[idx + 1] = self.model.figuras[idx + 1], self.model.figuras[idx]
+                self.model.figuras[idx], self.model.figuras[idx + 1] = self.model.figuras[idx + 1], self.model.figuras[
+                    idx]
                 self.view.canvas.tag_raise(figura.id_canvas, figura_frente.id_canvas)
 
     def mover_posicao_tras(self, event=None):
@@ -109,7 +110,8 @@ class Controller:
             idx = self.model.figuras.index(figura)
             if idx > 0:
                 figura_tras = self.model.figuras[idx - 1]
-                self.model.figuras[idx], self.model.figuras[idx - 1] = self.model.figuras[idx - 1], self.model.figuras[idx]
+                self.model.figuras[idx], self.model.figuras[idx - 1] = self.model.figuras[idx - 1], self.model.figuras[
+                    idx]
                 self.view.canvas.tag_lower(figura.id_canvas, figura_tras.id_canvas)
 
     def mover_topo(self, event=None):
