@@ -66,7 +66,7 @@ class Controller:
             self.view.canvas.itemconfig(self.model.figura_selecionada.id_canvas, width=1)
             self.model.figura_selecionada = None
 
-        estados = {"Linha": LinhaState,
+        estados = {"Linha": LinhaState(self),
                    "Retangulo": RetanguloState(self),
                    "Oval": OvalState(self),
                    "Circulo": CirculoState(self),
