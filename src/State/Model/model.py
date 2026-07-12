@@ -146,8 +146,37 @@ class FormasModelo:
         ponto_proximo_y = y1 + t * dy
 
         return sqrt((px - ponto_proximo_x) ** 2 + (py - ponto_proximo_y) ** 2)
-
     def distancia_figura(self, px, py): pass
+    def ao_clicar(self, event):
+        px, py = event.x, event.y
+        figura_clicada = None
+        if figura_clicada:
+            if self.model.figura_selecionada and self.model.figura_selecionada != figura_clicada:
+                self.view.canvas.itemconfig(self.model.figura_selecionada.id_canvas, width=1)
+
+            self.model.figura_selecionada = figura_clicada
+            self.x_anterior = px
+            self.y_anterior = py
+            self.view.canvas.itemconfig(figura_clicada.id_canvas, width=3)
+        else:
+            if self.model.figura_selecionada:
+                self.view.canvas.itemconfig(self.model.figura_selecionada.id_canvas, width=1)
+                self.model.figura_selecionada = None
+
+    def ao_arrastar(self, event):
+        if self.model.figura_selecionada:
+            dx = event.x - self.x_anterior
+            dy = event.y - self.y_anterior
+
+            id_canvas = self.model.figura_selecionada.id_canvas
+            self.view.canvas.move(id_canvas, dx, dy)
+
+            for i in range(0, len(self.model.figura_selecionada.valores), 2):
+                self.model.figura_selecionada.valores[i] += dx
+                self.model.figura_selecionada.valores[i + 1] += dy
+
+            self.x_anterior = event.x
+            self.y_anterior = event.y
 
 class Linha(FormasModelo):
     def desenhar(self, canvas):
@@ -169,6 +198,21 @@ class Linha(FormasModelo):
             if d < menor_dist:
                 menor_dist = d
         return menor_dist
+    
+    def ao_clicar(self, event):
+        px, py = event.x, event.y
+        tolerancia = 8
+
+        figura_clicada = None
+        menor_distancia = float('inf')
+
+        for figura in reversed(self.model.figuras):
+            dist = self.distancia_figura(figura, px, py)
+            if dist < tolerancia and dist < menor_distancia:
+                menor_distancia = dist
+                figura_clicada = figura
+    
+    
 
 
 class Rabisco(FormasModelo):
@@ -191,6 +235,19 @@ class Rabisco(FormasModelo):
             if d < menor_dist:
                 menor_dist = d
         return menor_dist
+    
+    def ao_clicar(self, event):
+        px, py = event.x, event.y
+        tolerancia = 8
+
+        figura_clicada = None
+        menor_distancia = float('inf')
+
+        for figura in reversed(self.model.figuras):
+            dist = self.distancia_figura(figura, px, py)
+            if dist < tolerancia and dist < menor_distancia:
+                menor_distancia = dist
+                figura_clicada = figura
 
 
 class Retangulo(FormasModelo):
@@ -207,6 +264,22 @@ class Retangulo(FormasModelo):
             if x_min <= px <= x_max and y_min <= py <= y_max:
                 return 0.0
         return float("inf")
+    def ao_clicar(self, event):
+        px, py = event.x, event.y
+        tolerancia = 8
+
+        figura_clicada = None
+        menor_distancia = float('inf')
+
+        if not figura_clicada:
+            for figura in reversed(self.model.figuras):
+                    dist = self.distancia_figura(figura, px, py)
+                    if dist == 0.0 or dist < tolerancia:
+                        if dist < menor_distancia:
+                            menor_distancia = dist
+                            figura_clicada = figura
+                        if dist == 0.0:
+                            break
 
 
 class Oval(FormasModelo):
@@ -223,6 +296,22 @@ class Oval(FormasModelo):
             if x_min <= px <= x_max and y_min <= py <= y_max:
                 return 0.0
         return float("inf")
+    def ao_clicar(self, event):
+        px, py = event.x, event.y
+        tolerancia = 8
+
+        figura_clicada = None
+        menor_distancia = float('inf')
+
+        if not figura_clicada:
+            for figura in reversed(self.model.figuras):
+                    dist = self.distancia_figura(figura, px, py)
+                    if dist == 0.0 or dist < tolerancia:
+                        if dist < menor_distancia:
+                            menor_distancia = dist
+                            figura_clicada = figura
+                        if dist == 0.0:
+                            break
 
 
 class Circulo(FormasModelo):
@@ -242,6 +331,23 @@ class Circulo(FormasModelo):
             if dist_centro <= raio:
                 return 0.0
         return float("inf")
+    
+    def ao_clicar(self, event):
+        px, py = event.x, event.y
+        tolerancia = 8
+
+        figura_clicada = None
+        menor_distancia = float('inf')
+
+        if not figura_clicada:
+            for figura in reversed(self.model.figuras):
+                    dist = self.distancia_figura(figura, px, py)
+                    if dist == 0.0 or dist < tolerancia:
+                        if dist < menor_distancia:
+                            menor_distancia = dist
+                            figura_clicada = figura
+                        if dist == 0.0:
+                            break
 
 
 class Poligono(FormasModelo):
