@@ -30,23 +30,18 @@ class SelecaoState(ControlState):
         self.x_anterior = 0
         self.y_anterior = 0
 
-    def ao_clicar(self, event):
+        def ao_clicar(self, event):
         px, py = event.x, event.y
         tolerancia = 8
 
         figura_clicada = None
 
-        for figura in reversed(self.model.figuras):
-            dist = figura.distancia_figura(px, py)
+        ctrl = (event.state & 4) != 0
 
-            if isinstance(figura, (Linha, Rabisco)):
-                if dist < tolerancia:
-                    figura_clicada = figura
-                    break
-            else:
-                if dist == 0.0:
-                    figura_clicada = figura
-                    break
+        for figura in reversed(self.model.figuras):
+            if figura.foi_clicada(px, py, tolerancia):
+                figura_clicada = figura
+                break
 
         if figura_clicada:
             if self.model.figura_selecionada and self.model.figura_selecionada != figura_clicada:
