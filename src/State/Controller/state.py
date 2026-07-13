@@ -9,11 +9,11 @@ class ControlState:
         self.view = controller.view
 
     @property
-    def cor_fill(self) -> str:
+    def cor_fill(self) -> str: 
         return self.controller.cor_fill.get() #pega a cor do preenchimento que esta no momento na figura
 
     @property
-    def cor_out(self) -> str:
+    def cor_out(self) -> str: 
         return self.controller.cor_out.get() #faz o mesmo que a de cima, porem para a linha da figura
 
     #aqui so para definir as funções que as funções do state utilizam
@@ -37,7 +37,7 @@ class SelecaoState(ControlState):
         figura_clicada = None
 
         for figura in reversed(self.model.figuras):
-            if figura.foi_clicada(px, py, tolerancia):
+            if figura.esta_proximo(px, py, tolerancia):
                 figura_clicada = figura
                 break
 
@@ -67,8 +67,7 @@ class SelecaoState(ControlState):
             self.x_anterior = event.x
             self.y_anterior = event.y
 
-    def ao_soltar(self, event):
-        pass
+    def ao_soltar(self, event): pass
 
 class FormaState(ControlState):
     def __init__(self, controller, classe_forma):
