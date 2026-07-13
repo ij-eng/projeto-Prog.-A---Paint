@@ -20,8 +20,8 @@ class Controller:
         self.cor_fill.trace_add("write", self.ao_mudar_cor_fill)
         self.cor_out.trace_add("write", self.ao_mudar_cor_out)
 
-        root.bind("<Right>", self.mover_posicao_frente)
-        root.bind("<Left>", self.mover_posicao_tras)
+        root.bind("<Right>", self.mover_frente)
+        root.bind("<Left>", self.mover_tras)
         root.bind("<Up>", self.mover_topo)
         root.bind("<Down>", self.mover_fundo)
 
