@@ -30,7 +30,7 @@ class SelecaoState(ControlState):
         self.x_anterior = 0
         self.y_anterior = 0
 
-        def ao_clicar(self, event):
+    def ao_clicar(self, event):
         px, py = event.x, event.y
         tolerancia = 8
 
