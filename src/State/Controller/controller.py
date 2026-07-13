@@ -94,7 +94,7 @@ class Controller:
         if cor[1]:
             self.cor_fill.set(cor[1])
 
-     def mover_frente(self, figura, canvas):
+    def mover_frente(self, figura, canvas):
         if figura in self.figuras:
             idx = self.figuras.index(figura)
             if idx < len(self.figuras) - 1:
