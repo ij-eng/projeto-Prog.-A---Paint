@@ -36,8 +36,6 @@ class SelecaoState(ControlState):
 
         figura_clicada = None
 
-        ctrl = (event.state & 4) != 0
-
         for figura in reversed(self.model.figuras):
             if figura.foi_clicada(px, py, tolerancia):
                 figura_clicada = figura
