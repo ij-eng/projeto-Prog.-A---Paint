@@ -123,7 +123,7 @@ class FormasModelo:
     
     def distancia_figura(self, px, py): pass
 
-    def foi_clicada(self, px, py, tolerancia):
+    def esta_proximo(self, px, py, tolerancia):
         return self.distancia_figura(px, py) == 0.0
 
 class Linha(FormasModelo):
