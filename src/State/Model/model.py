@@ -83,7 +83,8 @@ class FormasModelo:
 
     def desenhar(self, canvas): pass
 
-    def desenhar_provisorio(self, canvas): return self.desenhar(canvas)
+    def desenhar_provisorio(self, canvas): 
+        return self.desenhar(canvas)
 
     #Procura na lista de valores as cordenadas e acrescenta o deslocamento
     def mover(self, dx, dy):
@@ -130,8 +131,7 @@ class Linha(FormasModelo):
         if len(self.valores) >= 4:
             return canvas.create_line(self.valores[0], self.valores[1], self.valores[2], self.valores[3], fill=self.cor_out)
 
-    def mudar_cor_fill(self, canvas, cor):
-        pass #a linha nao tem o preenchimento ent n faz nada
+    def mudar_cor_fill(self, canvas, cor): pass #a linha nao tem o preenchimento ent n faz nada
 
     def mudar_cor_out(self, canvas, cor):
         self.cor_out = cor
@@ -146,7 +146,7 @@ class Linha(FormasModelo):
                 menor_dist = d
         return menor_dist
     
-    def foi_clicada(self, px, py, tolerancia):
+    def esta_proximo(self, px, py, tolerancia):
         return self.distancia_figura(px, py) < tolerancia
 
 
@@ -155,8 +155,7 @@ class Rabisco(FormasModelo):
         if len(self.valores) > 1:
             return canvas.create_line(self.valores, fill=self.cor_out)
 
-    def mudar_cor_fill(self, canvas, cor):
-        pass #mesma coisa da linha, n tem preenchimento
+    def mudar_cor_fill(self, canvas, cor): pass #mesma coisa da linha, n tem preenchimento
 
     def mudar_cor_out(self, canvas, cor):
         self.cor_out = cor
@@ -171,7 +170,7 @@ class Rabisco(FormasModelo):
                 menor_dist = d
         return menor_dist
     
-    def foi_clicada(self, px, py, tolerancia):
+    def esta_proximo(self, px, py, tolerancia):
         return self.distancia_figura(px, py) < tolerancia
 
 
