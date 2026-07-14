@@ -37,7 +37,7 @@ class SelecaoState(ControlState):
         figura_clicada = None
 
         for figura in reversed(self.model.figuras):
-            if figura.figura_clicada(px, py, tolerancia):
+            if figura.esta_proximo(px, py, tolerancia):
                 figura_clicada = figura
                 break
 
