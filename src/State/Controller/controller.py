@@ -2,7 +2,7 @@ from tkinter import colorchooser
 from View.view import *
 from Model.model import *
 from tkinter import filedialog
-from .state import LinhaState, RetanguloState, OvalState, CirculoState, RabiscoState, PoligonoState, SelecaoState
+from .state import LinhaState, RetanguloState, OvalState, CirculoState, RabiscoState, PoligonoState, SelecaoState, PoligonoRegularState
 
 
 class Controller:
@@ -72,6 +72,7 @@ class Controller:
                    "Circulo": CirculoState(self),
                    "Rabisco": RabiscoState(self),
                    "Poligono": PoligonoState(self),
+                   "Poligono Regular": PoligonoRegularState(self),
                    "Selecionar": SelecaoState(self)}
 
         self.estado_atual = estados[self.tipo_figura_var.get()]
@@ -156,3 +157,6 @@ class Controller:
 
     def ao_duplo_clique(self, event):
         self.estado_atual.ao_duplo_clique(event)
+
+    def ao_clique_direito(self, event):
+        self.estado_atual.ao_clique_direito(event)

@@ -1,5 +1,5 @@
-from math import sqrt
-from Model.model import Linha, Retangulo, Oval, Circulo, Rabisco, Poligono
+from math import sqrt, atan2, pi, cos, sin
+from Model.model import Linha, Retangulo, Oval, Circulo, Rabisco, Poligono, PoligonoRegular
 
 
 class ControlState:
@@ -22,6 +22,7 @@ class ControlState:
     def ao_soltar(self, event): pass
     def ao_mover(self, event): pass
     def ao_duplo_clique(self, event): pass
+    def ao_clique_direito(self, event): pass
 
 
 class SelecaoState(ControlState):
@@ -166,3 +167,74 @@ class PoligonoState(ControlState):
             self.model.desenhar_definitivo(self.view.canvas, Poligono, self.model.valores_atual.copy(), self.cor_fill, self.cor_out)
         self.model.valores_atual = []
         self.model.forma_em_andamento = False
+
+class PoligonoRegularState(ControlState):
+    def __init__(self, controller):
+        super().__init__(controller)
+        self.centro = None
+        self.num_lados = 3
+
+    def ao_clicar(self, event):
+        if self.centro is None:
+            self.centro = (event.x, event.y)
+            self.num_lados = 3
+            self.model.forma_em_andamento = True
+            self.atualizar_provisorio(event.x, event.y)
+
+        else:
+            self.num_lados += 1
+            self.atualizar_provisorio(event.x, event.y)
+
+    def ao_mover(self, event):
+        if self.centro is not None:
+            self.atualizar_provisorio(event.x, event.y)
+
+    def ao_clique_direito(self, event):
+        if self.centro is not None:
+            self.num_lados = max(3, self.num_lados - 1)
+            self.atualizar_provisorio(event.x, event.y)
+
+    def ao_duplo_clique(self, event):
+        if self.centro is not None:
+            self.num_lados = max(3, self.num_lados - 1)
+            
+            cx, cy = self.centro
+            mx, my = event.x, event.y
+            dx = mx - cx
+            dy = my - cy
+            raio = sqrt(dx**2 + dy**2)
+            
+            angulo_inicial = atan2(dy, dx)
+            pontos = []
+            for i in range(self.num_lados):
+                ang = angulo_inicial + i * (2 * pi / self.num_lados)
+                px = cx + raio * cos(ang)
+                py = cy + raio * sin(ang)
+                pontos.extend([px, py])
+                
+            self.model.deletar_provisorio(self.view.canvas)
+            
+            if len(pontos) >= 6:
+                self.model.desenhar_definitivo(
+                    self.view.canvas, 
+                    PoligonoRegular, 
+                    pontos, 
+                    self.cor_fill, 
+                    self.cor_out
+                )
+            
+            self.centro = None
+            self.num_lados = 3
+            self.model.valores_atual = []
+            self.model.forma_em_andamento = False
+
+    def atualizar_provisorio(self, mx, my):
+        cx, cy = self.centro
+        self.model.valores_atual = [cx, cy, mx, my, self.num_lados]
+        self.model.desenhar_provisorio(
+            self.view.canvas, 
+            PoligonoRegular, 
+            self.model.valores_atual, 
+            self.cor_fill, 
+            self.cor_out
+        )

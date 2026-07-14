@@ -22,7 +22,7 @@ class View:
         Label(toolbar, text="Forma: ").pack(side=LEFT, padx=5) #Essas 3 primeiras parte da interface é para definir o lugar que fica os botões
 
         seletor = OptionMenu(toolbar, self.tipo_figura_var, "Rabisco", "Rabisco", "Linha", "Retangulo", "Oval",
-                             "Circulo", "Poligono", "Selecionar") #Menu de seleção de figuras e do modo selecionar
+                             "Circulo", "Poligono", "Poligono Regular", "Selecionar") #Menu de seleção de figuras e do modo selecionar
         seletor.pack(side=LEFT, padx=5)
 
         btn_cor_out = Button(toolbar, text="Cor da Linha/Borda", command=self.controller.escolher_cor_out) #escolher a cor da linha/borda
@@ -49,3 +49,4 @@ class View:
         self.canvas.bind("<ButtonRelease-1>", self.controller.ao_soltar) #quando solta o mose
         self.canvas.bind("<Motion>", self.controller.ao_mover) #mover sem o mouse clicado
         self.canvas.bind("<Double-Button-1>", self.controller.ao_duplo_clique) #clicar duas vezes para o poligono
+        self.canvas.bind("<Button-3>", self.controller.ao_clique_direito) #clique direito do mouse para o poligono regular

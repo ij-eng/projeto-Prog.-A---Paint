@@ -1,4 +1,4 @@
-from math import sqrt
+from math import sqrt, atan2, pi, cos, sin
 
 
 class Model:
@@ -256,3 +256,31 @@ class Poligono(FormasModelo):
         if dentro:
             return 0.0
         return float("inf")
+
+class PoligonoRegular(Poligono):
+    def desenhar_provisorio(self, canvas):
+        if len(self.valores) < 5:
+            return None
+        
+        cx, cy, mx, my, num_lados = self.valores
+        num_lados = int(num_lados)
+        
+        dx = mx - cx
+        dy = my - cy
+        raio = sqrt(dx**2 + dy**2)
+        
+        tag = "provisorio_poligono_regular"
+        
+        canvas.create_oval(cx - raio, cy - raio, cx + raio, cy + raio,
+                           outline="black", dash=(4, 4), tags=tag)
+        
+        angulo_inicial = atan2(dy, dx)
+        pontos = []
+        for i in range(num_lados):
+            ang = angulo_inicial + i * (2 * pi / num_lados)
+            px = cx + raio * cos(ang)
+            py = cy + raio * sin(ang)
+            pontos.extend([px, py])
+            
+        canvas.create_polygon(pontos, fill=self.cor_fill, outline=self.cor_out, tags=tag)
+        return tag
