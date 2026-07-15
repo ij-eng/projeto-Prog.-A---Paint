@@ -34,6 +34,9 @@ class SelecaoState(ControlState):
         super().__init__(controller)
         self.x_anterior = 0
         self.y_anterior = 0
+        self.x_inicio = 0
+        self.y_inicio = 0
+        self.modo_selecionar_por_retangulo = False
 
     def ao_clicar(self, event):
         px, py = event.x, event.y
@@ -47,23 +50,35 @@ class SelecaoState(ControlState):
             if figura.foi_clicada(px, py, tolerancia):
                 figura_clicada = figura
                 break
-
-        if ctrl:
-            if figura_clicada:
-                if figura_clicada in self.model.figuras_selecionadas:
-                    figura_clicada.destacar(self.view.canvas, False)
-                    self.model.figuras_selecionadas.remove(figura_clicada)
+        if figura_clicada:
+            self.selecionar_por_retangulo = False
+            if ctrl:
+                if figura_clicada:
+                    if figura_clicada in self.model.figuras_selecionadas:
+                        figura_clicada.destacar(self.view.canvas, False)
+                        self.model.figuras_selecionadas.remove(figura_clicada)
+                    else:
+                        figura_clicada.destacar(self.view.canvas, True)
+                        self.model.figuras_selecionadas.append(figura_clicada)
+            else:
+                if figura_clicada:
+                    if figura_clicada not in self.model.figuras_selecionadas:
+                        for fig in self.model.figuras_selecionadas:
+                            fig.destacar(self.view.canvas, False)
+                        self.model.figuras_selecionadas = [figura_clicada]
+                        figura_clicada.destacar(self.view.canvas, True)
                 else:
-                    figura_clicada.destacar(self.view.canvas, True)
-                    self.model.figuras_selecionadas.append(figura_clicada)
-        else:
-            if figura_clicada:
-                if figura_clicada not in self.model.figuras_selecionadas:
                     for fig in self.model.figuras_selecionadas:
                         fig.destacar(self.view.canvas, False)
-                    self.model.figuras_selecionadas = [figura_clicada]
-                    figura_clicada.destacar(self.view.canvas, True)
-            else:
+                    self.model.figuras_selecionadas.clear()
+        else:
+            # Se clicou no vazio, inicia a seleção por caixa
+            self.modo_selecionar_por_retangulo = True
+            self.x_inicio = px
+            self.y_inicio = py
+            
+            # Se não estiver pressionando CTRL, limpa a seleção atual
+            if not ctrl:
                 for fig in self.model.figuras_selecionadas:
                     fig.destacar(self.view.canvas, False)
                 self.model.figuras_selecionadas.clear()
@@ -73,7 +88,18 @@ class SelecaoState(ControlState):
         self.y_anterior = py
 
     def ao_arrastar(self, event):
-        if self.model.figuras_selecionadas:
+        if self.modo_selecionar_por_retangulo:
+            # Desenha o retângulo de seleção provisório 
+            valores_retangulo = [self.x_inicio, self.y_inicio, event.x, event.y]
+            self.model.desenhar_provisorio(
+                self.view.canvas, 
+                Retangulo, 
+                valores_retangulo, 
+                "",          # Fundo transparente 
+                "blue"       # Cor da borda
+            )
+        elif self.model.figuras_selecionadas:
+            # Arrastar figuras selecionadas
             dx = event.x - self.x_anterior
             dy = event.y - self.y_anterior
 
@@ -83,9 +109,50 @@ class SelecaoState(ControlState):
 
             self.x_anterior = event.x
             self.y_anterior = event.y
+    def ao_soltar(self, event):
+        if self.modo_selecionar_por_retangulo:
+            # Remove o retângulo azul pontilhado provisório da tela
+            self.model.deletar_provisorio(self.view.canvas)
+            
+            # Determina os limites da caixa de seleção final
+            x_min, x_max = sorted([self.x_inicio, event.x])
+            y_min, y_max = sorted([self.y_inicio, event.y])
 
-    def ao_soltar(self, event): pass
+            # Procura por figuras que estão inteiramente dentro do seu retângulo de seleção
+            for figura in self.model.figuras:
+                completamente_dentro = self.seEstadentro(figura)
+                if completamente_dentro:
+                    fig_x1, fig_y1, fig_x2, fig_y2 = completamente_dentro
+                    # Confere se a figura está de fato dentro da área do arrasto
+                    if (x_min <= fig_x1 and fig_x2 <= x_max and 
+                        y_min <= fig_y1 and fig_y2 <= y_max):
+                        if figura not in self.model.figuras_selecionadas:
+                            self.model.figuras_selecionadas.append(figura)
+                            figura.destacar(self.view.canvas, True)
 
+            self.model.figura_selecionada = self.model.figuras_selecionadas[-1] if self.model.figuras_selecionadas else None
+            self.modo_selecionar_por_retangulo = False
+        else:
+            pass
+
+    def seEstadentro(self, figura):
+        """Cria o retangulo delimitador"""
+        # Se for um Círculo ou Oval, calculamos matematicamente os limites a partir dos valores armazenados
+        if type(figura) in [Circulo, Oval] and len(figura.valores) >= 4:
+            # Para círculos/ovais, valores geralmente são [x1, y1, x2, y2] 
+            x1, y1, x2, y2 = figura.valores[:4]
+            return min(x1, x2), min(y1, y2), max(x1, x2), max(y1, y2)
+            
+        # Para Polígonos, Rabiscos e outras formas com múltiplos pontos
+        if len(figura.valores) >= 2:
+            xs = figura.valores[0::2]
+            ys = figura.valores[1::2]
+            return min(xs), min(ys), max(xs), max(ys)
+        
+        if figura.id:
+            return self.view.canvas.completamente_dentro(figura.id)
+            
+        return None
 
 class FormaState(ControlState):
     def __init__(self, controller, classe_forma):
