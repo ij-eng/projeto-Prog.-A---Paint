@@ -2,7 +2,7 @@ from tkinter import colorchooser
 from View.view import *
 from Model.model import *
 from tkinter import filedialog
-from .state import LinhaState, RetanguloState, OvalState, CirculoState, RabiscoState, PoligonoState, SelecaoState, PoligonoRegularState
+from Controller.state import (LinhaState, RetanguloState, OvalState, CirculoState, RabiscoState, PoligonoState, SelecaoState, PoligonoRegularState)
 
 
 class Controller:
@@ -20,8 +20,8 @@ class Controller:
         self.cor_fill.trace_add("write", self.ao_mudar_cor_fill)
         self.cor_out.trace_add("write", self.ao_mudar_cor_out)
 
-        root.bind("<Right>", self.mover_frente)
-        root.bind("<Left>", self.mover_tras)
+        root.bind("<Right>", self.mover_posicao_frente)
+        root.bind("<Left>", self.mover_posicao_tras)
         root.bind("<Up>", self.mover_topo)
         root.bind("<Down>", self.mover_fundo)
 
@@ -62,28 +62,31 @@ class Controller:
             self.model.deletar_provisorio(self.view.canvas)
             self.model.valores_atual = []
 
-        if self.model.figura_selecionada:
-            self.view.canvas.itemconfig(self.model.figura_selecionada.id_canvas, width=1)
-            self.model.figura_selecionada = None
+        for figura in self.model.figuras_selecionadas:
+            figura.destacar(self.view.canvas, False)
+        self.model.figuras_selecionadas.clear()
+        self.model.figura_selecionada = None
 
-        estados = {"Linha": LinhaState(self),
-                   "Retangulo": RetanguloState(self),
-                   "Oval": OvalState(self),
-                   "Circulo": CirculoState(self),
-                   "Rabisco": RabiscoState(self),
-                   "Poligono": PoligonoState(self),
-                   "Poligono Regular": PoligonoRegularState(self),
-                   "Selecionar": SelecaoState(self)}
+        estados = {
+            "Linha": LinhaState(self),
+            "Retangulo": RetanguloState(self),
+            "Oval": OvalState(self),
+            "Circulo": CirculoState(self),
+            "Rabisco": RabiscoState(self),
+            "Poligono": PoligonoState(self),
+            "Poligono Regular": PoligonoRegularState(self),
+            "Selecionar": SelecaoState(self)
+        }
 
         self.estado_atual = estados[self.tipo_figura_var.get()]
 
     def deletar_figura(self, event=None):
-        if self.model.figura_selecionada:
-            id_canvas = self.model.figura_selecionada.id_canvas
-            self.view.canvas.delete(id_canvas)
-            if self.model.figura_selecionada in self.model.figuras:
-                self.model.figuras.remove(self.model.figura_selecionada)
-            self.model.figura_selecionada = None
+        for figura in self.model.figuras_selecionadas:
+            figura.deletar_do_canvas(self.view.canvas)
+            if figura in self.model.figuras:
+                self.model.figuras.remove(figura)
+        self.model.figuras_selecionadas.clear()
+        self.model.figura_selecionada = None
 
     def escolher_cor_out(self):
         cor = colorchooser.askcolor(title="Escolha a cor da borda")
@@ -95,50 +98,69 @@ class Controller:
         if cor[1]:
             self.cor_fill.set(cor[1])
 
-    def mover_frente(self,*args):
-        if self.model.figura_selecionada in self.model.figuras:
-            idx = self.model.figuras.index(self.model.figura_selecionada)
+    def agrupar_figuras(self):
+        if len(self.model.figuras_selecionadas) > 1:
+            for fig in self.model.figuras_selecionadas:
+                if fig in self.model.figuras:
+                    self.model.figuras.remove(fig)
+            grupo = FiguraComposta(list(self.model.figuras_selecionadas), self.cor_fill.get(), self.cor_out.get())
+            self.model.figuras.append(grupo)
+            self.model.figuras_selecionadas = [grupo]
+            self.model.figura_selecionada = grupo
+            grupo.destacar(self.view.canvas, True)
+
+    def mover_posicao_frente(self, event=None):
+        canvas = self.view.canvas
+        for figura in self.model.figuras_selecionadas:
+            idx = self.model.figuras.index(figura)
             if idx < len(self.model.figuras) - 1:
                 figura_frente = self.model.figuras[idx + 1]
                 self.model.figuras[idx], self.model.figuras[idx + 1] = self.model.figuras[idx + 1], self.model.figuras[idx]
-                self.view.canvas.tag_raise(self.model.figura_selecionada.id_canvas, figura_frente.id_canvas)
+                for id_item in figura.obter_ids_canvas():
+                    for id_frente in figura_frente.obter_ids_canvas():
+                        canvas.tag_raise(id_item, id_frente)
 
-    def mover_tras(self,*args):
-        if self.model.figura_selecionada in self.model.figuras:
-            idx = self.model.figuras.index(self.model.figura_selecionada)
+    def mover_posicao_tras(self, event=None):
+        canvas = self.view.canvas
+        for figura in reversed(self.model.figuras_selecionadas):
+            idx = self.model.figuras.index(figura)
             if idx > 0:
                 figura_tras = self.model.figuras[idx - 1]
                 self.model.figuras[idx], self.model.figuras[idx - 1] = self.model.figuras[idx - 1], self.model.figuras[idx]
-                self.view.canvas.tag_lower(self.model.figura_selecionada.id_canvas, figura_tras.id_canvas)
+                for id_item in reversed(figura.obter_ids_canvas()):
+                    for id_tras in reversed(figura_tras.obter_ids_canvas()):
+                        canvas.tag_lower(id_item, id_tras)
 
+    def mover_topo(self, event=None):
+        canvas = self.view.canvas
+        for figura in self.model.figuras_selecionadas:
+            self.model.figuras.remove(figura)
+            self.model.figuras.append(figura)
+            for id_item in figura.obter_ids_canvas():
+                canvas.tag_raise(id_item)
 
-    def mover_topo(self,*args):
-        if self.model.figura_selecionada in self.model.figuras:
-            self.view.canvas.tag_raise(self.model.figura_selecionada.id_canvas)
-            self.model.figuras.remove(self.model.figura_selecionada)
-            self.model.figuras.append(self.model.figura_selecionada)
-
-    def mover_fundo(self,*args):
-        if self.model.figura_selecionada in self.model.figuras:
-            self.view.canvas.tag_lower(self.model.figura_selecionada.id_canvas)
-            self.model.figuras.remove(self.model.figura_selecionada)
-            self.model.figuras.insert(0, self.model.figura_selecionada)
+    def mover_fundo(self, event=None):
+        canvas = self.view.canvas
+        for figura in reversed(self.model.figuras_selecionadas):
+            self.model.figuras.remove(figura)
+            self.model.figuras.insert(0, figura)
+            for id_item in reversed(figura.obter_ids_canvas()):
+                canvas.tag_lower(id_item)
 
     def copiar_figura(self, event=None):
-        if self.model.figura_selecionada:
-            self.model.copiar_figura(self.model.figura_selecionada)
+        self.model.copiar_figura()
 
     def colar_figura(self, event=None):
         if self.model.figura_copiada:
             self.model.colar_figura(self.view.canvas)
 
     def ao_mudar_cor_fill(self, *args):
-        if self.model.figura_selecionada:
-            self.model.figura_selecionada.mudar_cor_fill(self.view.canvas, self.cor_fill.get())
+        for figura in self.model.figuras_selecionadas:
+            figura.mudar_cor_fill(self.view.canvas, self.cor_fill.get())
 
     def ao_mudar_cor_out(self, *args):
-        if self.model.figura_selecionada:
-            self.model.figura_selecionada.mudar_cor_out(self.view.canvas, self.cor_out.get())
+        for figura in self.model.figuras_selecionadas:
+            figura.mudar_cor_out(self.view.canvas, self.cor_out.get())
 
     def definir_transparente(self):
         self.cor_fill.set("")
