@@ -116,9 +116,13 @@ class Controller:
             if idx < len(self.model.figuras) - 1:
                 figura_frente = self.model.figuras[idx + 1]
                 self.model.figuras[idx], self.model.figuras[idx + 1] = self.model.figuras[idx + 1], self.model.figuras[idx]
-                for id_item in figura.obter_ids_canvas():
-                    for id_frente in figura_frente.obter_ids_canvas():
-                        canvas.tag_raise(id_item, id_frente)
+
+                frente_ids = figura_frente.obter_ids_canvas()
+                if frente_ids:
+                    ultimo_id = frente_ids[-1]
+                    for id_item in figura.obter_ids_canvas():
+                        canvas.tag_raise(id_item, ultimo_id)
+                        ultimo_id = id_item
 
     def mover_posicao_tras(self, event=None):
         canvas = self.view.canvas
@@ -127,9 +131,13 @@ class Controller:
             if idx > 0:
                 figura_tras = self.model.figuras[idx - 1]
                 self.model.figuras[idx], self.model.figuras[idx - 1] = self.model.figuras[idx - 1], self.model.figuras[idx]
-                for id_item in reversed(figura.obter_ids_canvas()):
-                    for id_tras in reversed(figura_tras.obter_ids_canvas()):
-                        canvas.tag_lower(id_item, id_tras)
+
+                tras_ids = figura_tras.obter_ids_canvas()
+                if tras_ids:
+                    ultimo_id = tras_ids[0]
+                    for id_item in reversed(figura.obter_ids_canvas()):
+                        canvas.tag_lower(id_item, ultimo_id)
+                        ultimo_id = id_item
 
     def mover_topo(self, event=None):
         canvas = self.view.canvas
