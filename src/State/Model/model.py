@@ -181,7 +181,14 @@ class FormasModelo:
 
     def foi_clicada(self, px, py, tolerancia):
         return self.dentro(px, py) < tolerancia
-
+    
+    def obter_limites(self):
+        if not self.valores:
+            return None
+    
+        xs = self.valores[0::2]
+        ys = self.valores[1::2]
+        return min(xs), min(ys), max(xs), max(ys)
 
 class Linha(FormasModelo):
     def desenhar(self, canvas):
@@ -258,6 +265,19 @@ class Oval(FormasModelo):
             if x_min <= px <= x_max and y_min <= py <= y_max:
                 return 0.0
         return float("inf")
+    
+    def obter_limites(self):
+        if len(self.valores) < 4:
+            return None
+            
+        x1, y1, x2, y2 = self.valores[:4]
+        
+        x_min = min(x1, x2)
+        y_min = min(y1, y2)
+        x_max = max(x1, x2)
+        y_max = max(y1, y2)
+        
+        return x_min, y_min, x_max, y_max
 
 
 class Circulo(FormasModelo):
@@ -277,7 +297,21 @@ class Circulo(FormasModelo):
             if dist_centro <= raio:
                 return 0.0
         return float("inf")
-
+    
+    def obter_limites(self):
+        if len(self.valores) < 4:
+            return None
+            
+        x1, y1, x2, y2 = self.valores[:4]
+        
+        raio = sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
+    
+        x_min = x1 - raio
+        y_min = y1 - raio
+        x_max = x1 + raio
+        y_max = y1 + raio
+        
+        return x_min, y_min, x_max, y_max
 
 class Poligono(FormasModelo):
     def desenhar(self, canvas):

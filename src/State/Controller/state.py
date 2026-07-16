@@ -105,49 +105,22 @@ class SelecaoState(ControlState):
 
     def ao_soltar(self, event):
         if self.modo_selecionar_por_retangulo:
-            # Remove o retângulo azul pontilhado provisório da tela
             self.model.deletar_provisorio(self.view.canvas)
 
-            # Determina os limites da caixa de seleção final
             x_min, x_max = sorted([self.x_inicio, event.x])
             y_min, y_max = sorted([self.y_inicio, event.y])
 
-            # Procura por figuras que estão inteiramente dentro do seu retângulo de seleção
             for figura in self.model.figuras:
-                completamente_dentro = self.SeEstadentro(figura)
-                if completamente_dentro:
-                    fig_x1, fig_y1, fig_x2, fig_y2 = completamente_dentro
-                    # Confere se a figura está de fato dentro da área do arrasto
+                limites = figura.obter_limites() 
+                
+                if limites:
+                    fig_x1, fig_y1, fig_x2, fig_y2 = limites
                     if (x_min <= fig_x1 and fig_x2 <= x_max and
                             y_min <= fig_y1 and fig_y2 <= y_max):
                         if figura not in self.model.figuras_selecionadas:
                             self.model.figuras_selecionadas.append(figura)
                             figura.destacar(self.view.canvas, True)
 
-            self.model.figura_selecionada = self.model.figuras_selecionadas[
-                -1] if self.model.figuras_selecionadas else None
-            self.modo_selecionar_por_retangulo = False
-        else:
-            pass
-
-    def SeEstadentro(self, figura):
-        """Cria o retangulo delimitador"""
-        # Se for um Círculo ou Oval, calculamos matematicamente os limites a partir dos valores armazenados
-        if type(figura) in [Circulo, Oval] and len(figura.valores) >= 4:
-            # Para círculos/ovais, valores geralmente são [x1, y1, x2, y2]
-            x1, y1, x2, y2 = figura.valores[:4]
-            return min(x1, x2), min(y1, y2), max(x1, x2), max(y1, y2)
-
-        # Para Polígonos, Rabiscos e outras formas com múltiplos pontos
-        if len(figura.valores) >= 2:
-            xs = figura.valores[0::2]
-            ys = figura.valores[1::2]
-            return min(xs), min(ys), max(xs), max(ys)
-
-        if figura.id:
-            return self.view.canvas.completamente_dentro(figura.id)
-
-        return None
 
 class FormaState(ControlState):
     def __init__(self, controller, classe_forma):
