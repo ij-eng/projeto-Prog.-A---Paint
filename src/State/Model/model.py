@@ -99,7 +99,7 @@ class Model:
 
         for figura in self.figura_copiada:
             nova_figura = figura.clonar()
-            nova_figura.mover(20, 20)
+            nova_figura.mover(canvas, 20, 20)
             nova_figura.id_canvas = nova_figura.desenhar(canvas)
             self.figuras.append(nova_figura)
             self.figuras_selecionadas.append(nova_figura)
@@ -130,14 +130,12 @@ class FormasModelo:
     def desenhar_provisorio(self, canvas):
         return self.desenhar(canvas)
 
-    def mover(self, dx, dy):
+    def mover(self, canvas, dx, dy):
         for i in range(len(self.valores)):
             if i % 2 == 0:
                 self.valores[i] += dx
             else:
                 self.valores[i] += dy
-
-    def mover_no_canvas(self, canvas, dx, dy):
         if self.id_canvas:
             canvas.move(self.id_canvas, dx, dy)
 
@@ -179,10 +177,10 @@ class FormasModelo:
 
         return sqrt((px - ponto_proximo_x) ** 2 + (py - ponto_proximo_y) ** 2)
 
-    def distancia_figura(self, px, py): pass
+    def dentro(self, px, py): pass
 
     def foi_clicada(self, px, py, tolerancia):
-        return self.distancia_figura(px, py) < tolerancia
+        return self.dentro(px, py) < tolerancia
 
 
 class Linha(FormasModelo):
@@ -198,7 +196,7 @@ class Linha(FormasModelo):
         if self.id_canvas:
             canvas.itemconfig(self.id_canvas, fill=cor)
 
-    def distancia_figura(self, px, py):
+    def dentro(self, px, py):
         valores = self.valores
         menor_dist = float('inf')
         for i in range(0, len(valores) - 2, 2):
@@ -220,7 +218,7 @@ class Rabisco(FormasModelo):
         if self.id_canvas:
             canvas.itemconfig(self.id_canvas, fill=cor)
 
-    def distancia_figura(self, px, py):
+    def dentro(self, px, py):
         valores = self.valores
         menor_dist = float('inf')
         for i in range(0, len(valores) - 2, 2):
@@ -236,7 +234,7 @@ class Retangulo(FormasModelo):
             return canvas.create_rectangle(self.valores[0], self.valores[1], self.valores[2], self.valores[3],
                                            fill=self.cor_fill, outline=self.cor_out)
 
-    def distancia_figura(self, px, py):
+    def dentro(self, px, py):
         valores = self.valores
         if len(valores) >= 4:
             x_min, x_max = min(valores[0], valores[2]), max(valores[0], valores[2])
@@ -252,7 +250,7 @@ class Oval(FormasModelo):
             return canvas.create_oval(self.valores[0], self.valores[1], self.valores[2], self.valores[3],
                                       fill=self.cor_fill, outline=self.cor_out)
 
-    def distancia_figura(self, px, py):
+    def dentro(self, px, py):
         valores = self.valores
         if len(valores) >= 4:
             x_min, x_max = min(valores[0], valores[2]), max(valores[0], valores[2])
@@ -270,7 +268,7 @@ class Circulo(FormasModelo):
             return canvas.create_oval(x1 - raio, y1 - raio, x1 + raio, y1 + raio, fill=self.cor_fill,
                                       outline=self.cor_out)
 
-    def distancia_figura(self, px, py):
+    def dentro(self, px, py):
         valores = self.valores
         if len(valores) >= 4:
             x1, y1, x2, y2 = valores[:4]
@@ -290,7 +288,7 @@ class Poligono(FormasModelo):
         if len(self.valores) >= 4:
             return canvas.create_line(self.valores, fill=self.cor_out)
 
-    def distancia_figura(self, px, py):
+    def dentro(self, px, py):
         valores = self.valores
         pontos = [(valores[i], valores[i + 1]) for i in range(0, len(valores) - 1, 2)]
         n = len(pontos)
@@ -369,14 +367,10 @@ class FiguraComposta(FormasModelo):
             figura.id_canvas = figura.desenhar(canvas)
         return self.figuras_componentes[0].id_canvas if self.figuras_componentes else None
 
-    def mover(self, dx, dy):
+    def mover(self, canvas, dx, dy):
         for figura in self.figuras_componentes:
-            figura.mover(dx, dy)
+            figura.mover(canvas, dx, dy)
         self.atualizar_valores_compostos()
-
-    def mover_no_canvas(self, canvas, dx, dy):
-        for figura in self.figuras_componentes:
-            figura.mover_no_canvas(canvas, dx, dy)
 
     def destacar(self, canvas, ativo=True):
         for figura in self.figuras_componentes:
@@ -396,10 +390,10 @@ class FiguraComposta(FormasModelo):
         for figura in self.figuras_componentes:
             figura.mudar_cor_out(canvas, cor)
 
-    def distancia_figura(self, px, py):
+    def dentro(self, px, py):
         menor_dist = float('inf')
         for figura in self.figuras_componentes:
-            d = figura.distancia_figura(px, py)
+            d = figura.dentro(px, py)
             if d < menor_dist:
                 menor_dist = d
         return menor_dist
