@@ -132,15 +132,16 @@ class Controller:
         )
         for idx in indices_ordenados:
             if idx < len(figuras_totais) - 1:
-                figura = figuras_totais[idx]
-                figura_frente = figuras_totais[idx + 1]
-                figuras_totais[idx], figuras_totais[idx + 1] = figuras_totais[idx + 1], figuras_totais[idx]
-                frente_ids = figura_frente.obter_ids_canvas()
-                if frente_ids:
-                    ultimo_id = frente_ids[-1]
-                    for id_item in figura.obter_ids_canvas():
-                        canvas.tag_raise(id_item, ultimo_id)
-                        ultimo_id = id_item
+                if figuras_totais[idx] in self.model.figuras_selecionadas and figuras_totais[idx+1] not in self.model.figuras_selecionadas:
+                    figura = figuras_totais[idx]
+                    figura_frente = figuras_totais[idx + 1]
+                    figuras_totais[idx], figuras_totais[idx + 1] = figuras_totais[idx + 1], figuras_totais[idx]
+                    frente_ids = figura_frente.obter_ids_canvas()
+                    if frente_ids:
+                        ultimo_id = frente_ids[-1]
+                        for id_item in figura.obter_ids_canvas():
+                            canvas.tag_raise(id_item, ultimo_id)
+                            ultimo_id = id_item
 
     def mover_posicao_tras(self, event=None):
         canvas = self.view.canvas
@@ -157,13 +158,14 @@ class Controller:
             if idx > 0:
                 figura = figuras_totais[idx]
                 figura_tras = figuras_totais[idx - 1]
-                figuras_totais[idx], figuras_totais[idx - 1] = figuras_totais[idx - 1], figuras_totais[idx]
-                tras_ids = figura_tras.obter_ids_canvas()
-                if tras_ids:
-                    ultimo_id = tras_ids[0]
-                    for id_item in reversed(figura.obter_ids_canvas()):
-                        canvas.tag_lower(id_item, ultimo_id)
-                        ultimo_id = id_item
+                if figuras_totais[idx] in self.model.figuras_selecionadas and figuras_totais[idx-1] not in self.model.figuras_selecionadas:
+                    figuras_totais[idx], figuras_totais[idx - 1] = figuras_totais[idx - 1], figuras_totais[idx]
+                    tras_ids = figura_tras.obter_ids_canvas()
+                    if tras_ids:
+                        ultimo_id = tras_ids[0]
+                        for id_item in reversed(figura.obter_ids_canvas()):
+                            canvas.tag_lower(id_item, ultimo_id)
+                            ultimo_id = id_item
 
     def mover_topo(self, event=None):
         canvas = self.view.canvas
