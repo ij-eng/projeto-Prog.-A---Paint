@@ -3,22 +3,22 @@ from math import sqrt, atan2, pi, cos, sin
 
 class Model:
     def __init__(self):
-        self.figuras = []
-        self.valores_atual = []
-        self.forma_em_andamento = False
-        self.id_provisorio = None
+        self.figuras = [] #salva as figuras desenhadas
+        self.valores_atual = [] #guarda as coordenadas de enquanto o mouse ta sendo arrastado
+        self.forma_em_andamento = False #serve principalmente para os poligonos, para checar se ainda esta sendo feito
+        self.id_provisorio = None #guarda o id que o tkinter da para cada figura
         self.figura_selecionada = None
-        self.figura_copiada = []
-        self.figuras_selecionadas = []
-        self.undo_pilha = []
-        self.redo_pilha = []
+        self.figura_copiada = [] #guarda a figura que foi copiada
+        self.figuras_selecionadas = [] #guarda as figuras que foram selecionadas
+        self.undo_pilha = [] #guarda tudo do canvas para conseguir voltar
+        self.redo_pilha = [] #guarda tudo do canvas para conseguir ir para o estado mais avançado
 
     def salvar_estado(self):
         self.redo_pilha.clear()
-        # Clona cada figura individualmente para guardar as coordenadas antigas exatas
+        #clona cada figura individualmente para guardar as coordenadas antigas exatas
         figuras_clonadas = [fig.clonar() for fig in self.figuras]
         
-        # Mapeia as selecionadas para as novas instâncias clonadas
+        #mapeia as selecionadas para as novas instâncias clonadas
         selecionadas_clonadas = []
         for fig in self.figuras_selecionadas:
             if fig in self.figuras:
@@ -35,7 +35,7 @@ class Model:
         if not self.undo_pilha:
             return False
 
-        # Guarda o estado atual no Redo antes de voltar (também clonando)
+        #guarda o estado atual no Redo antes de voltar (também clonando)
         figuras_clonadas = [fig.clonar() for fig in self.figuras]
         selecionadas_clonadas = []
         for fig in self.figuras_selecionadas:
@@ -49,7 +49,7 @@ class Model:
         }
         self.redo_pilha.append(estado_atual)
 
-        # Restaura o estado anterior
+        #restaura o estado anterior
         ultimo_estado = self.undo_pilha.pop()
         self.figuras = ultimo_estado['figuras']
         self.figuras_selecionadas = ultimo_estado['selecionadas']
@@ -59,7 +59,7 @@ class Model:
         if not self.redo_pilha:
             return False
             
-        # Guarda o estado atual no Undo (também clonando)
+        #guarda o estado atual no Undo (também clonando)
         figuras_clonadas = [fig.clonar() for fig in self.figuras]
         selecionadas_clonadas = []
         for fig in self.figuras_selecionadas:
@@ -73,7 +73,7 @@ class Model:
         }
         self.undo_pilha.append(estado_atual)
 
-        # Restaura o próximo estado tirando da redo_pilha
+        #restaura o próximo estado tirando da redo_pilha
         proximo_estado = self.redo_pilha.pop()
         self.figuras = proximo_estado['figuras']
         self.figuras_selecionadas = proximo_estado['selecionadas']
@@ -81,32 +81,32 @@ class Model:
     
     def deletar_provisorio(self, canvas):
         if self.id_provisorio:
-            canvas.delete(self.id_provisorio)
+            canvas.delete(self.id_provisorio) #usa o id para apagar a figura temporaria da tela
             self.id_provisorio = None
 
     def desenhar_provisorio(self, canvas, classe_forma, valores, cor_fill, cor_out):
         self.deletar_provisorio(canvas)
         figura = classe_forma(valores, cor_fill, cor_out)
-        self.id_provisorio = figura.desenhar_provisorio(canvas)
+        self.id_provisorio = figura.desenhar_provisorio(canvas) 
 
     def desenhar_definitivo(self, canvas, classe_forma, valores, cor_fill, cor_out):
         self.salvar_estado()
         figura = classe_forma(valores, cor_fill, cor_out)
         figura.id_canvas = figura.desenhar(canvas)
-        self.figuras.append(figura)
+        self.figuras.append(figura)  #desenha a forma real da figura e pega o id dela e adiciona ela na lista de figuras
 
     def obter_figura_por_id(self, id_canvas):
-        for figura in self.figuras:
+        for figura in self.figuras: #procura na lista a figura selecionada e se for uma figura composta ela vai ter o id procura dos componentes
             if id_canvas in figura.obter_ids_canvas():
                 return figura
         return None
 
-    def salvar_para_txt(self, caminho):
+    def salvar_para_txt(self, caminho): #salva o desenho em formato de texto com o nome e coordenadas das figuras desenhadas
         with open(caminho, 'w') as f:
             for figura in self.figuras:
                 self.salvar_recursivo(f, figura)
 
-    def salvar_recursivo(self, f, figura):
+    def salvar_recursivo(self, f, figura): #vai passar pela lista e entender qual tipo de figura é aquilo, se é uma figura normal ou uma composta
         if isinstance(figura, FiguraComposta):
             f.write(f"InicioGrupo|{figura.cor_fill}|{figura.cor_out}\n")
             for sub_fig in figura.figuras_componentes:
@@ -116,13 +116,13 @@ class Model:
             valores_str = ",".join(map(str, figura.valores))
             f.write(f"{type(figura).__name__}|{valores_str}|{figura.cor_fill}|{figura.cor_out}\n")
 
-    def carregar_de_txt(self, caminho):
+    def carregar_de_txt(self, caminho): #apaga as coisas do canvas e bota as registradas no arquivo txt de escolha do usuario
         self.figuras = []
         with open(caminho, 'r') as f:
             linhas = [linha.strip() for i in f if (linha := i.strip())]
         self.figuras = self.carregar_linhas_recursivo(linhas)
 
-    def carregar_linhas_recursivo(self, linhas):
+    def carregar_linhas_recursivo(self, linhas): #ele checa se a figura desenhada é composta ou não, atravas do InicioGrupo e FimGrupo
         figuras_carregadas = []
         while linhas:
             linha = linhas.pop(0)
@@ -147,16 +147,16 @@ class Model:
                     figuras_carregadas.append(figura)
         return figuras_carregadas
 
-    def redesenhar_tudo(self, canvas):
+    def redesenhar_tudo(self, canvas): #serve para o carregar_de_txt
         for figura in self.figuras:
             figura.id_canvas = figura.desenhar(canvas)
 
-    def copiar_figura(self):
+    def copiar_figura(self): #adiciona a figura na lista de copiadas e tbm usa o metodo clonar nela
         self.figura_copiada = []
         for figura in self.figuras_selecionadas:
             self.figura_copiada.append(figura.clonar())
 
-    def colar_figura(self, canvas):
+    def colar_figura(self, canvas): 
         if not self.figura_copiada:
             return
 
@@ -183,15 +183,15 @@ class Model:
 
 class FormasModelo:
     def __init__(self, valores, cor_fill, cor_out):
-        self.valores = valores
+        self.valores = valores #as coordenadas x,y
         self.cor_fill = cor_fill
         self.cor_out = cor_out
-        self.id_canvas = None
+        self.id_canvas = None #a identidade secreta da figura no canvas
 
-    def clonar(self):
+    def clonar(self): #faz o deep copy da forma
         return self.__class__(list(self.valores), self.cor_fill, self.cor_out)
 
-    def obter_ids_canvas(self):
+    def obter_ids_canvas(self): #retorna uma lista com todos os ids do canvas associados com a figura
         return [self.id_canvas] if self.id_canvas else []
 
     def desenhar(self, canvas): pass
@@ -199,7 +199,7 @@ class FormasModelo:
     def desenhar_provisorio(self, canvas):
         return self.desenhar(canvas)
 
-    def mover(self, canvas, dx, dy):
+    def mover(self, canvas, dx, dy): #procura na lista de coordenadas os valores e vai acrescentando ou diminuindo eles conforme o usuario vai movendo
         for i in range(len(self.valores)):
             if i % 2 == 0:
                 self.valores[i] += dx
@@ -208,12 +208,12 @@ class FormasModelo:
         if self.id_canvas:
             canvas.move(self.id_canvas, dx, dy)
 
-    def destacar(self, canvas, ativo=True):
+    def destacar(self, canvas, ativo=True): #serve para destacar a figura quando selecionada
         if self.id_canvas:
             largura = 3 if ativo else 1
             canvas.itemconfig(self.id_canvas, width=largura)
 
-    def deletar_do_canvas(self, canvas):
+    def deletar_do_canvas(self, canvas): #serve para deletar uma figura do canvas e da lista
         if self.id_canvas:
             canvas.delete(self.id_canvas)
 
@@ -248,10 +248,10 @@ class FormasModelo:
 
     def dentro(self, px, py): pass
 
-    def foi_clicada(self, px, py, tolerancia):
+    def foi_clicada(self, px, py, tolerancia):  #serve para checar se a figura foi ou não clicada, se o clique for dentro ou proximo da figura (linha e rabisco) essa função verifica isso.
         return self.dentro(px, py) < tolerancia
     
-    def obter_limites(self):
+    def obter_limites(self): 
         if not self.valores:
             return None
     
