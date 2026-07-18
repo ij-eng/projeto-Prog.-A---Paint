@@ -31,10 +31,6 @@ class Controller:
         root.bind("<Control-c>", self.copiar_figura)
         root.bind("<Control-v>", self.colar_figura)
 
-        root.bind("<Control-z>", self.undo)
-        root.bind("<Control-Z>", self.undo)
-        root.bind("<Control-y>", self.redo)
-        root.bind("<Control-Y>", self.redo)
         self.view.canvas.bind("<Button-1>", lambda event: self.view.canvas.focus_set(), add="+")
         self.view.canvas.focus_set()
 
@@ -89,7 +85,6 @@ class Controller:
 
     def deletar_figura(self, event=None):
         if self.model.figuras_selecionadas:
-            self.model.salvar_estado()
             for figura in self.model.figuras_selecionadas:
                 figura.deletar_do_canvas(self.view.canvas)
                 if figura in self.model.figuras:
@@ -109,14 +104,29 @@ class Controller:
 
     def agrupar_figuras(self):
         if len(self.model.figuras_selecionadas) > 1:
+            indices = [self.model.figuras.index(fig) for fig in self.model.figuras_selecionadas if fig in self.model.figuras]
+            
+            max_idx = max(indices)
+            
+            proximo_elemento = self.model.figuras[max_idx + 1] if max_idx + 1 < len(self.model.figuras) else None
+
             for fig in self.model.figuras_selecionadas:
                 if fig in self.model.figuras:
                     self.model.figuras.remove(fig)
+
             grupo = FiguraComposta(list(self.model.figuras_selecionadas), self.cor_fill.get(), self.cor_out.get())
-            self.model.figuras.append(grupo)
+            
+            if proximo_elemento in self.model.figuras:
+                idx_insercao = self.model.figuras.index(proximo_elemento)
+                self.model.figuras.insert(idx_insercao, grupo)
+            else:
+                self.model.figuras.append(grupo)
+
             self.model.figuras_selecionadas = [grupo]
             self.model.figura_selecionada = grupo
             grupo.destacar(self.view.canvas, True)
+            
+            self.sincronizar_idx(self.view.canvas)
 
     def mover_posicao_frente(self, event=None):
         canvas = self.view.canvas
@@ -124,7 +134,6 @@ class Controller:
         selecionadas = self.model.figuras_selecionadas
 
         if not selecionadas: return
-        self.model.salvar_estado()
         canvas.focus_set()
         indices_ordenados = sorted(
             [figuras_totais.index(f) for f in selecionadas], 
@@ -148,7 +157,6 @@ class Controller:
         figuras_totais = self.model.figuras
         selecionadas = self.model.figuras_selecionadas
         if not selecionadas: return
-        self.model.salvar_estado()
         canvas.focus_set()
         indices_ordenados = sorted(
             [figuras_totais.index(f) for f in selecionadas]
@@ -208,31 +216,13 @@ class Controller:
         if self.model.figura_copiada:
             self.model.colar_figura(self.view.canvas)
 
-    def undo(self, event=None):
-        canvas = self.view.canvas
-        if self.model.undo():
-            canvas.delete("all")
-            self.model.redesenhar_tudo(canvas)
-            canvas.focus_set()
-            self.sincronizar_idx(canvas)
-
-    def redo(self, event=None):
-        canvas = self.view.canvas
-        if self.model.redo():
-            canvas.delete("all")
-            self.model.redesenhar_tudo(canvas)
-            canvas.focus_set()
-            self.sincronizar_idx(canvas)
-
     def ao_mudar_cor_fill(self, *args):
         if self.model.figuras_selecionadas:
-            self.model.salvar_estado()
             for figura in self.model.figuras_selecionadas:
                 figura.mudar_cor_fill(self.view.canvas, self.cor_fill.get())
 
     def ao_mudar_cor_out(self, *args):
         if self.model.figuras_selecionadas:
-            self.model.salvar_estado()
             for figura in self.model.figuras_selecionadas:
                 figura.mudar_cor_out(self.view.canvas, self.cor_out.get())
 
@@ -267,8 +257,6 @@ class Controller:
             "TECLADO:\n"
             "- Ctrl + C : Copiar figuras selecionadas\n"
             "- Ctrl + V : Colar figuras copiadas\n"
-            "- Ctrl + Z : Desfazer (Undo)\n"
-            "- Ctrl + Y : Refazer (Redo)\n"
             "- Delete / Backspace : Apagar figuras selecionadas\n\n"
             "CAMADAS (Com figuras selecionadas):\n"
             "- Seta para Direita : Mover figura um nível para a frente\n"
