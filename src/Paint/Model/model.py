@@ -10,7 +10,75 @@ class Model:
         self.figura_selecionada = None
         self.figura_copiada = [] #guarda a figura que foi copiada
         self.figuras_selecionadas = [] #guarda as figuras que foram selecionadas
+        self.undo_pilha = [] #guarda tudo do canvas para conseguir voltar
+        self.redo_pilha = [] #guarda tudo do canvas para conseguir ir para o estado mais avançado
 
+    def salvar_estado(self):
+        self.redo_pilha.clear()
+        #clona cada figura individualmente para guardar as coordenadas antigas exatas
+        figuras_clonadas = [fig.clonar() for fig in self.figuras]
+        
+        #mapeia as selecionadas para as novas instâncias clonadas
+        selecionadas_clonadas = []
+        for fig in self.figuras_selecionadas:
+            if fig in self.figuras:
+                idx = self.figuras.index(fig)
+                selecionadas_clonadas.append(figuras_clonadas[idx])
+
+        estado_atual = {
+            'figuras': figuras_clonadas,
+            'selecionadas': selecionadas_clonadas
+        }
+        self.undo_pilha.append(estado_atual)
+
+    def undo(self):
+        if not self.undo_pilha:
+            return False
+
+        #guarda o estado atual no Redo antes de voltar (também clonando)
+        figuras_clonadas = [fig.clonar() for fig in self.figuras]
+        selecionadas_clonadas = []
+        for fig in self.figuras_selecionadas:
+            if fig in self.figuras:
+                idx = self.figuras.index(fig)
+                selecionadas_clonadas.append(figuras_clonadas[idx])
+
+        estado_atual = {
+            'figuras': figuras_clonadas,
+            'selecionadas': selecionadas_clonadas
+        }
+        self.redo_pilha.append(estado_atual)
+
+        #restaura o estado anterior
+        ultimo_estado = self.undo_pilha.pop()
+        self.figuras = ultimo_estado['figuras']
+        self.figuras_selecionadas = ultimo_estado['selecionadas']
+        return True
+    
+    def redo(self):
+        if not self.redo_pilha:
+            return False
+            
+        #guarda o estado atual no Undo (também clonando)
+        figuras_clonadas = [fig.clonar() for fig in self.figuras]
+        selecionadas_clonadas = []
+        for fig in self.figuras_selecionadas:
+            if fig in self.figuras:
+                idx = self.figuras.index(fig)
+                selecionadas_clonadas.append(figuras_clonadas[idx])
+
+        estado_atual = {
+            'figuras': figuras_clonadas,
+            'selecionadas': selecionadas_clonadas
+        }
+        self.undo_pilha.append(estado_atual)
+
+        #restaura o próximo estado tirando da redo_pilha
+        proximo_estado = self.redo_pilha.pop()
+        self.figuras = proximo_estado['figuras']
+        self.figuras_selecionadas = proximo_estado['selecionadas']
+        return True
+    
     def deletar_provisorio(self, canvas):
         if self.id_provisorio:
             canvas.delete(self.id_provisorio) #usa o id para apagar a figura temporaria da tela
@@ -22,6 +90,7 @@ class Model:
         self.id_provisorio = figura.desenhar_provisorio(canvas) 
 
     def desenhar_definitivo(self, canvas, classe_forma, valores, cor_fill, cor_out):
+        self.salvar_estado()
         figura = classe_forma(valores, cor_fill, cor_out)
         figura.id_canvas = figura.desenhar(canvas)
         self.figuras.append(figura)  #desenha a forma real da figura e pega o id dela e adiciona ela na lista de figuras
@@ -49,6 +118,8 @@ class Model:
 
     def carregar_de_txt(self, caminho): #apaga as coisas do canvas e bota as registradas no arquivo txt de escolha do usuario
         self.figuras = []
+        self.undo_pilha.clear()
+        self.redo_pilha.clear()
         with open(caminho, 'r') as f:
             linhas = [linha.strip() for i in f if (linha := i.strip())]
         self.figuras = self.carregar_linhas_recursivo(linhas)
@@ -91,6 +162,7 @@ class Model:
         if not self.figura_copiada:
             return
 
+        self.salvar_estado()
         for fig in self.figuras_selecionadas:
             fig.destacar(canvas, False)
         self.figuras_selecionadas.clear()
