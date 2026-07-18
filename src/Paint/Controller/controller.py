@@ -104,17 +104,19 @@ class Controller:
 
     def agrupar_figuras(self):
         if len(self.model.figuras_selecionadas) > 1:
-            indices = [self.model.figuras.index(fig) for fig in self.model.figuras_selecionadas if fig in self.model.figuras]
-            
+            figuras_ordenadas = sorted(
+                [fig for fig in self.model.figuras_selecionadas if fig in self.model.figuras],
+                key=lambda f: self.model.figuras.index(f)
+            )
+
+            indices = [self.model.figuras.index(fig) for fig in figuras_ordenadas]
             max_idx = max(indices)
-            
             proximo_elemento = self.model.figuras[max_idx + 1] if max_idx + 1 < len(self.model.figuras) else None
 
-            for fig in self.model.figuras_selecionadas:
-                if fig in self.model.figuras:
-                    self.model.figuras.remove(fig)
+            for fig in figuras_ordenadas:
+                self.model.figuras.remove(fig)
 
-            grupo = FiguraComposta(list(self.model.figuras_selecionadas), self.cor_fill.get(), self.cor_out.get())
+            grupo = FiguraComposta(figuras_ordenadas, self.cor_fill.get(), self.cor_out.get())
             
             if proximo_elemento in self.model.figuras:
                 idx_insercao = self.model.figuras.index(proximo_elemento)
